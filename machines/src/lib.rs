@@ -30,6 +30,7 @@ pub mod serial;
 pub mod wago_power;
 pub mod wago_serial_machine;
 pub mod winder2;
+pub mod network_shim;
 
 mod machine_data;
 pub use machine_data::MachineData;

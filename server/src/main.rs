@@ -69,6 +69,7 @@ pub mod performance_metrics;
 pub mod rest;
 pub mod socketio;
 pub mod utils;
+pub mod network_shim_init;
 
 mod machine_manager;
 pub use machine_manager::MachineManager;
@@ -350,6 +351,11 @@ fn main() {
 
     #[cfg(feature = "mock-machine")]
     init_mock(app_state.clone()).expect("Failed to initialize mock machines");
+
+    // Brabender winex_shim — aktiviert via WINEXT_SHIM_URL Umgebungsvariable
+    if let Ok(url) = std::env::var("WINEXT_SHIM_URL") {
+        smol::block_on(network_shim_init::init_network_shim(app_state.clone(), url));
+    }
 
     smol::block_on(async {
         loop {
