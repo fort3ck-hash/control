@@ -14,15 +14,15 @@ use smol::channel::{Receiver, Sender, bounded};
 use tracing::{info, warn};
 
 use crate::{
-    AsyncThreadMessage, Machine, MachineAct, MachineApi, MachineIdentification,
+    AsyncThreadMessage, Machine, MachineAct, MachineApi,
     MachineMessage, MachineValues, MACHINE_EXTRUDER_V2, VENDOR_QITECH,
-    machine_identification::MachineIdentificationUnique,
+    machine_identification::{MachineIdentification, MachineIdentificationUnique},
 };
 use control_core::socketio::namespace::Namespace;
 
 pub const NETWORK_SHIM_SERIAL: u16 = 0xB001;
 
-#[derive(Default, Clone)]
+#[derive(Debug, Default, Clone)]
 struct LiveCache {
     rpm: f64,
     pressure: f64,
