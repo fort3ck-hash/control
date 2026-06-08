@@ -100,7 +100,7 @@ ln -sf /mnt/etc/nixos/hardware-configuration.nix /etc/nixos/hardware-configurati
 
 echo ">>> Cloning repository ..."
 # Use remote URL and current branch if we are in the repo, hardcoded defaults otherwise
-export GIT_URL=$(git config --get remote.origin.url 2> /dev/null || echo "https://github.com/qitechgmbh/control.git")
+export GIT_URL=$(git config --get remote.origin.url 2> /dev/null || echo "https://github.com/fort3ck-hash/control.git")
 export GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2> /dev/null || echo "master")
 
 REPO_DIR=$(mktemp -d)
