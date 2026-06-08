@@ -121,6 +121,7 @@ in
       environment = {
         RUST_BACKTRACE = "full";
         RUST_LOG = "info";
+        WINEXT_SHIM_URL = "http://192.168.137.1:8710";
       };
     };
 
