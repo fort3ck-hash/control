@@ -1,11 +1,10 @@
 //! NetworkShimMachine — bridges QiTech mutations to the winex_shim HTTP server
 //! and polls live values from it every 200 ms.
 //!
-//! Does NOT perform blocking I/O on the RT thread. Two background threads handle
-//! HTTP so that act() stays non-blocking:
-//!   • poller thread  — GET /api/v1/live_values every 200 ms, writes to Arc<Mutex>
-//!   • forwarder thread — reads from mpsc queue, POST /api/v1/mutations
+//! Uses only std::net::TcpStream so no extra crate dependency is needed.
 
+use std::io::{Read, Write};
+use std::net::TcpStream;
 use std::sync::mpsc as mpsc;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -21,37 +20,78 @@ use crate::{
 };
 use control_core::socketio::namespace::Namespace;
 
-/// Assigned serial — must be unique on the QiTech bus.
-/// 0xB001 = "Brabender shim #1"
 pub const NETWORK_SHIM_SERIAL: u16 = 0xB001;
-
-// ---------------------------------------------------------------------------
-// Shared cache written by the poller thread, read by act()
-// ---------------------------------------------------------------------------
 
 #[derive(Default, Clone)]
 struct LiveCache {
     rpm: f64,
     pressure: f64,
-    temps: [f64; 4], // [front, middle, back, nozzle]
+    temps: [f64; 4],
 }
-
-// ---------------------------------------------------------------------------
-// Machine struct
-// ---------------------------------------------------------------------------
 
 #[derive(Debug)]
 pub struct NetworkShimMachine {
     uid: MachineIdentificationUnique,
-    // smol async channel — used by the QiTech API layer
     sender: Sender<MachineMessage>,
     receiver: Receiver<MachineMessage>,
     namespace: Option<Namespace>,
-    // shared live-value cache updated by the poller thread
     cache: Arc<Mutex<LiveCache>>,
-    // queue to the forwarder thread (non-blocking send from act())
     mutation_tx: mpsc::Sender<Value>,
 }
+
+// ---------------------------------------------------------------------------
+// Minimal HTTP helpers using only stdlib — no TLS needed (local HTTP only)
+// ---------------------------------------------------------------------------
+
+fn parse_http_url(url: &str) -> Option<(String, String)> {
+    let without_scheme = url.strip_prefix("http://")?;
+    let slash_pos = without_scheme.find('/').unwrap_or(without_scheme.len());
+    let host_port = without_scheme[..slash_pos].to_string();
+    let path = if slash_pos < without_scheme.len() {
+        without_scheme[slash_pos..].to_string()
+    } else {
+        "/".to_string()
+    };
+    Some((host_port, path))
+}
+
+fn http_get(url: &str, timeout: Duration) -> Option<String> {
+    let (host_port, path) = parse_http_url(url)?;
+    let mut stream = TcpStream::connect(&host_port).ok()?;
+    stream.set_read_timeout(Some(timeout)).ok()?;
+    stream.set_write_timeout(Some(timeout)).ok()?;
+    let request = format!(
+        "GET {} HTTP/1.0\r\nHost: {}\r\nConnection: close\r\n\r\n",
+        path, host_port
+    );
+    stream.write_all(request.as_bytes()).ok()?;
+    let mut response = Vec::new();
+    stream.read_to_end(&mut response).ok()?;
+    let response = String::from_utf8_lossy(&response).into_owned();
+    // Body starts after the blank line separating headers from body
+    response.find("\r\n\r\n").map(|i| response[i + 4..].to_string())
+}
+
+fn http_post_json(url: &str, body: &str, timeout: Duration) {
+    let Some((host_port, path)) = parse_http_url(url) else {
+        return;
+    };
+    let Ok(mut stream) = TcpStream::connect(&host_port) else {
+        return;
+    };
+    let _ = stream.set_write_timeout(Some(timeout));
+    let _ = stream.set_read_timeout(Some(timeout));
+    let request = format!(
+        "POST {} HTTP/1.0\r\nHost: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+        path, host_port, body.len(), body
+    );
+    let _ = stream.write_all(request.as_bytes());
+    // Drain response to allow server to finish writing
+    let mut buf = [0u8; 256];
+    let _ = stream.read(&mut buf);
+}
+
+// ---------------------------------------------------------------------------
 
 impl NetworkShimMachine {
     pub fn new(base_url: String) -> Self {
@@ -59,54 +99,45 @@ impl NetworkShimMachine {
         let cache = Arc::new(Mutex::new(LiveCache::default()));
         let (mut_tx, mut_rx) = mpsc::channel::<Value>();
 
-        // --- poller thread ---
+        // poller thread
         {
             let cache = cache.clone();
             let url = base_url.clone();
             std::thread::Builder::new()
                 .name("winex-shim-poller".into())
-                .spawn(move || {
-                    loop {
-                        let endpoint = format!("{url}/api/v1/live_values");
-                        match ureq::get(&endpoint)
-                            .timeout(Duration::from_millis(600))
-                            .call()
-                        {
-                            Ok(resp) => {
-                                if let Ok(json) = resp.into_json::<Value>() {
-                                    let mut c = cache.lock().unwrap();
-                                    if let Some(v) =
-                                        json.pointer("/motor_status/rpm").and_then(Value::as_f64)
+                .spawn(move || loop {
+                    let endpoint = format!("{url}/api/v1/live_values");
+                    match http_get(&endpoint, Duration::from_millis(600)) {
+                        Some(body) => {
+                            if let Ok(json) = serde_json::from_str::<Value>(&body) {
+                                let mut c = cache.lock().unwrap();
+                                if let Some(v) =
+                                    json.pointer("/motor_status/rpm").and_then(Value::as_f64)
+                                {
+                                    c.rpm = v;
+                                }
+                                if let Some(v) = json.get("pressure").and_then(Value::as_f64) {
+                                    c.pressure = v;
+                                }
+                                if let Some(t) = json.get("temperatures") {
+                                    for (i, key) in
+                                        ["front", "middle", "back", "nozzle"].iter().enumerate()
                                     {
-                                        c.rpm = v;
-                                    }
-                                    if let Some(v) =
-                                        json.get("pressure").and_then(Value::as_f64)
-                                    {
-                                        c.pressure = v;
-                                    }
-                                    if let Some(t) = json.get("temperatures") {
-                                        for (i, key) in
-                                            ["front", "middle", "back", "nozzle"].iter().enumerate()
-                                        {
-                                            if let Some(v) =
-                                                t.get(*key).and_then(Value::as_f64)
-                                            {
-                                                c.temps[i] = v;
-                                            }
+                                        if let Some(v) = t.get(*key).and_then(Value::as_f64) {
+                                            c.temps[i] = v;
                                         }
                                     }
                                 }
                             }
-                            Err(e) => warn!("NetworkShimMachine poller: {e}"),
                         }
-                        std::thread::sleep(Duration::from_millis(200));
+                        None => warn!("NetworkShimMachine poller: request failed"),
                     }
+                    std::thread::sleep(Duration::from_millis(200));
                 })
                 .expect("failed to spawn poller thread");
         }
 
-        // --- forwarder thread ---
+        // forwarder thread
         {
             let url = base_url.clone();
             std::thread::Builder::new()
@@ -119,13 +150,7 @@ impl NetworkShimMachine {
                             serde_json::json!([mutation])
                         };
                         let endpoint = format!("{url}/api/v1/mutations");
-                        if let Err(e) = ureq::post(&endpoint)
-                            .timeout(Duration::from_millis(2000))
-                            .set("Content-Type", "application/json")
-                            .send_string(&body.to_string())
-                        {
-                            warn!("NetworkShimMachine forwarder: {e}");
-                        }
+                        http_post_json(&endpoint, &body.to_string(), Duration::from_millis(2000));
                     }
                 })
                 .expect("failed to spawn forwarder thread");
@@ -171,20 +196,14 @@ impl NetworkShimMachine {
     }
 }
 
-// ---------------------------------------------------------------------------
-// Trait implementations
-// ---------------------------------------------------------------------------
-
 impl MachineAct for NetworkShimMachine {
     fn act_machine_message(&mut self, msg: MachineMessage) {
         match msg {
             MachineMessage::SubscribeNamespace(ns) => self.namespace = Some(ns),
             MachineMessage::UnsubscribeNamespace => self.namespace = None,
-            // Forward mutation to shim via non-blocking queue
             MachineMessage::HttpApiJsonRequest(value) => {
                 let _ = self.mutation_tx.send(value);
             }
-            // REST GET endpoint — reply with latest cached values
             MachineMessage::RequestValues(reply) => {
                 let _ = reply.try_send(self.current_machine_values());
             }
@@ -192,12 +211,9 @@ impl MachineAct for NetworkShimMachine {
     }
 
     fn act(&mut self, _now: Instant) {
-        // Drain all pending API messages — never blocks
         while let Ok(msg) = self.receiver.try_recv() {
             self.act_machine_message(msg);
         }
-        // Live-value cache is updated by the poller thread in the background.
-        // No I/O here — act() stays non-blocking.
     }
 }
 

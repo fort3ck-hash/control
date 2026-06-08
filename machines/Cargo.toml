@@ -10,7 +10,6 @@ control_core = { path = "../control-core" }
 control_core_derive = { path = "../control-core-derive" }
 units = { path = "../units" }
 
-ureq = { version = "2", default-features = false, features = ["json"] }
 serde = "1.0.217"
 anyhow = "1.0.102"
 
