@@ -29,6 +29,11 @@ use crate::{
 use control_core::socketio::namespace::NamespaceCacheingLogic;
 
 pub const NETWORK_SHIM_SERIAL: u16 = 0xB001;
+const PRESSURE_CONTROL_INTERVAL_S: u64 = 1;
+const PRESSURE_CONTROL_DEADBAND_BAR: f64 = 0.5;
+const PRESSURE_CONTROL_KP_RPM_PER_BAR: f64 = 0.2;
+const PRESSURE_CONTROL_KI_RPM_PER_BAR_S: f64 = 0.02;
+const PRESSURE_CONTROL_MAX_RPM: f64 = 44.0;
 
 // ---------------------------------------------------------------------------
 // Minimal HTTP helpers using only stdlib — no TLS needed (local HTTP only)
@@ -107,8 +112,12 @@ pub struct NetworkShimMachine {
 
     // State tracked by this machine
     mode: ExtruderV2Mode,
+    uses_rpm: bool,
+    target_pressure: f64,
     target_rpm: f64,
     target_temps: [f64; 4],
+    pressure_integral: f64,
+    last_pressure_control: Instant,
     emitted_default_state: bool,
     last_emit: Instant,
 }
@@ -203,8 +212,12 @@ impl NetworkShimMachine {
             cache,
             mutation_tx: mut_tx,
             mode: ExtruderV2Mode::Standby,
+            uses_rpm: true,
+            target_pressure: 0.0,
             target_rpm: 0.0,
             target_temps: [160.0, 160.0, 160.0, 160.0],
+            pressure_integral: 0.0,
+            last_pressure_control: Instant::now(),
             emitted_default_state: false,
             last_emit: Instant::now(),
         }
@@ -244,9 +257,9 @@ impl NetworkShimMachine {
             is_default_state: is_default,
             rotation_state: RotationState { forward: true },
             mode_state: ModeState { mode: self.mode.clone() },
-            regulation_state: RegulationState { uses_rpm: true },
+            regulation_state: RegulationState { uses_rpm: self.uses_rpm },
             pressure_state: PressureState {
-                target_bar: 0.0,
+                target_bar: self.target_pressure,
                 wiring_error: false,
             },
             screw_state: ScrewState { target_rpm: self.target_rpm },
@@ -308,6 +321,48 @@ impl NetworkShimMachine {
         }
     }
 
+    fn update_pressure_regulation(&mut self, now: Instant) {
+        if self.uses_rpm
+            || self.mode != ExtruderV2Mode::Extrude
+            || self.target_pressure <= 0.0
+            || self.target_rpm <= 0.0
+            || now.duration_since(self.last_pressure_control)
+                < Duration::from_secs(PRESSURE_CONTROL_INTERVAL_S)
+        {
+            return;
+        }
+
+        let elapsed_s = now
+            .duration_since(self.last_pressure_control)
+            .as_secs_f64()
+            .max(0.001);
+        self.last_pressure_control = now;
+
+        let pressure = self.cache.lock().unwrap().pressure;
+        let error = self.target_pressure - pressure;
+        if error.abs() <= PRESSURE_CONTROL_DEADBAND_BAR {
+            return;
+        }
+
+        self.pressure_integral =
+            (self.pressure_integral + error * elapsed_s).clamp(-100.0, 100.0);
+
+        let rpm_delta =
+            error * PRESSURE_CONTROL_KP_RPM_PER_BAR
+                + self.pressure_integral * PRESSURE_CONTROL_KI_RPM_PER_BAR_S;
+        let next_rpm = (self.target_rpm + rpm_delta).clamp(0.0, PRESSURE_CONTROL_MAX_RPM);
+
+        if (next_rpm - self.target_rpm).abs() < 0.1 {
+            return;
+        }
+
+        self.target_rpm = next_rpm;
+        let _ = self
+            .mutation_tx
+            .try_send(serde_json::json!({"SetInverterTargetRpm": next_rpm}));
+        self.emit_state();
+    }
+
     fn current_machine_values(&mut self) -> MachineValues {
         let state = self.build_state_event();
         let live = self.build_live_values();
@@ -332,6 +387,8 @@ impl MachineAct for NetworkShimMachine {
                 self.emit_state();
             }
         }
+
+        self.update_pressure_regulation(now);
 
         // Emit live values and state at ~30fps
         if now.duration_since(self.last_emit) >= Duration::from_millis(33) {
@@ -366,6 +423,20 @@ impl MachineAct for NetworkShimMachine {
                     } else if let Some(rpm_val) = obj.get("SetInverterTargetRpm") {
                         if let Some(rpm) = rpm_val.as_f64() {
                             self.target_rpm = rpm;
+                            self.pressure_integral = 0.0;
+                            self.emit_state();
+                        }
+                    } else if let Some(pressure_val) = obj.get("SetInverterTargetPressure") {
+                        if let Some(pressure) = pressure_val.as_f64() {
+                            self.target_pressure = pressure;
+                            self.pressure_integral = 0.0;
+                            self.emit_state();
+                        }
+                    } else if let Some(regulation_val) = obj.get("SetInverterRegulation") {
+                        if let Some(uses_rpm) = regulation_val.as_bool() {
+                            self.uses_rpm = uses_rpm;
+                            self.pressure_integral = 0.0;
+                            self.last_pressure_control = Instant::now();
                             self.emit_state();
                         }
                     } else if let Some(t) = obj.get("SetFrontHeatingTargetTemperature") {

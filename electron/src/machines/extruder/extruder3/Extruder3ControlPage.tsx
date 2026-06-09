@@ -74,7 +74,7 @@ export function Extruder3ControlPage() {
     <Page>
       <ControlGrid>
         <HeatingZone
-          title={"Heating Front"}
+          title={"Heizzone 3"}
           heatingState={state?.heating_states.front}
           heatingTimeSeries={frontTemperature}
           onChangeTargetTemp={setFrontHeatingTemperature}
@@ -83,7 +83,7 @@ export function Extruder3ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Middle"}
+          title={"Heizzone 2"}
           heatingState={state?.heating_states.middle}
           heatingTimeSeries={middleTemperature}
           onChangeTargetTemp={setMiddleHeatingTemperature}
@@ -92,7 +92,7 @@ export function Extruder3ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Back"}
+          title={"Heizzone 1"}
           heatingState={state?.heating_states.back}
           heatingTimeSeries={backTemperature}
           onChangeTargetTemp={setBackHeatingTemperature}
@@ -101,7 +101,7 @@ export function Extruder3ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Nozzle"}
+          title={"Düse"}
           heatingState={state?.heating_states.nozzle}
           heatingTimeSeries={nozzleTemperature}
           onChangeTargetTemp={setNozzleHeatingTemperature}
@@ -112,7 +112,7 @@ export function Extruder3ControlPage() {
             true
           }
         />
-        <ControlCard className="bg-red" title="Screw Drive">
+        <ControlCard className="bg-red" title="Extruderantrieb">
           {state?.inverter_status_state.overload_warning == true ? (
             <StatusBadge variant="error">
               Inverter is overloaded! Please check the extruder and reduce load

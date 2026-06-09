@@ -82,7 +82,7 @@ export function Extruder2ControlPage() {
     <Page>
       <ControlGrid>
         <HeatingZone
-          title={"Heating Front"}
+          title={"Heizzone 3"}
           heatingState={state?.heating_states.front}
           heatingTimeSeries={frontTemperature}
           heatingPower={frontPower}
@@ -92,7 +92,7 @@ export function Extruder2ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Middle"}
+          title={"Heizzone 2"}
           heatingState={state?.heating_states.middle}
           heatingTimeSeries={middleTemperature}
           heatingPower={middlePower}
@@ -102,7 +102,7 @@ export function Extruder2ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Back"}
+          title={"Heizzone 1"}
           heatingState={state?.heating_states.back}
           heatingTimeSeries={backTemperature}
           heatingPower={backPower}
@@ -112,7 +112,7 @@ export function Extruder2ControlPage() {
           targetTemperatureEnabled={true}
         />
         <HeatingZone
-          title={"Heating Nozzle"}
+          title={"Düse"}
           heatingState={state?.heating_states.nozzle}
           heatingTimeSeries={nozzleTemperature}
           heatingPower={nozzlePower}
@@ -124,7 +124,7 @@ export function Extruder2ControlPage() {
             true
           }
         />
-        <ControlCard className="bg-red" title="Screw Drive">
+        <ControlCard className="bg-red" title="Extruderantrieb">
           {state?.inverter_status_state.overload_warning == true ? (
             <StatusBadge variant="error">
               Inverter is overloaded! Please check the extruder and reduce load
