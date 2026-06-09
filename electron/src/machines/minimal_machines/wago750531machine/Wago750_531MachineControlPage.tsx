@@ -27,13 +27,13 @@ export function Wago750_531MachineControlPage() {
                   className="flex flex-col gap-3"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "flex-1",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "flex-1",
@@ -47,7 +47,7 @@ export function Wago750_531MachineControlPage() {
         </ControlCard>
 
         {/* Master Output Control */}
-        <ControlCard title="Master Output Control">
+        <ControlCard title="Hauptausgang-Steuerung">
           <SelectionGroup<"On" | "Off">
             value={
               safeState.outputs_on.every(Boolean)
@@ -58,8 +58,8 @@ export function Wago750_531MachineControlPage() {
             }
             orientation="horizontal"
             options={{
-              Off: { children: "Turn All Off" },
-              On: { children: "Turn All On" },
+              Off: { children: "Alle ausschalten" },
+              On: { children: "Alle einschalten" },
             }}
             onChange={(value) => setAllOutputs(value === "On")}
           />

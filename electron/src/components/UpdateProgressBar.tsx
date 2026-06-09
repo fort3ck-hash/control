@@ -16,10 +16,10 @@ export function UpdateProgressBar({
 }: UpdateProgressBarProps) {
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Overall Progress Bar */}
+      {/* Gesamtfortschritt Bar */}
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium">Overall Progress</span>
+          <span className="text-sm font-medium">Gesamtfortschritt</span>
           <span className="text-sm font-semibold tabular-nums">
             {overallProgress}%
           </span>

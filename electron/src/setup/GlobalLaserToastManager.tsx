@@ -59,13 +59,13 @@ function LaserErrorToast({
             toast.dismiss(TOAST_ID);
             onDismiss();
           }}
-          aria-label="Close"
+          aria-label="Schliessen"
         >
           ×
         </button>
       </div>
       <p className="text-base leading-snug text-red-50">
-        Laser diameter is <strong>out of tolerance</strong>.
+        Laserdurchmesser ist <strong>ausserhalb der Toleranz</strong>.
         <br />
         Please check the filament immediately.
       </p>

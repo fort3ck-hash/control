@@ -9,12 +9,12 @@ import { useWagoAiTestMachine } from "./useWagoAiTestMachine";
 export function WagoAiTestMachineControl(): React.JSX.Element {
   const { seriesData, state, updateMeasurementRate } = useWagoAiTestMachine();
 
-  if (!seriesData) return <div>Initializing Sensor...</div>;
+  if (!seriesData) return <div>Sensor wird initialisiert...</div>;
 
   return (
     <Page>
       <ControlGrid columns={2}>
-        <ControlCard title="Measurement Control">
+        <ControlCard title="Messsteuerung">
           <div
             style={{
               display: "flex",
@@ -22,7 +22,7 @@ export function WagoAiTestMachineControl(): React.JSX.Element {
               justifyContent: "space-between",
             }}
           >
-            <div>Measurement Rate (Hz)</div>
+            <div>Messrate (Hz)</div>
             <input
               type="number"
               style={{
@@ -40,7 +40,7 @@ export function WagoAiTestMachineControl(): React.JSX.Element {
             ></input>
           </div>
         </ControlCard>
-        <ControlCard title="Analog Input 1 (4-20mA)">
+        <ControlCard title="Analogeingang 1 (4-20mA)">
           <div className="flex flex-row">
             <MiniGraph
               newData={seriesData.ai1}
@@ -57,7 +57,7 @@ export function WagoAiTestMachineControl(): React.JSX.Element {
             </div>
           </div>
         </ControlCard>
-        <ControlCard title="Analog Input 2 (4-20mA)">
+        <ControlCard title="Analogeingang 2 (4-20mA)">
           <div className="flex flex-row">
             <MiniGraph
               newData={seriesData.ai2}
@@ -74,7 +74,7 @@ export function WagoAiTestMachineControl(): React.JSX.Element {
             </div>
           </div>
         </ControlCard>
-        <ControlCard title="Analog Input 3 (4-20mA)">
+        <ControlCard title="Analogeingang 3 (4-20mA)">
           <div className="flex flex-row">
             <MiniGraph
               newData={seriesData.ai3}
@@ -91,7 +91,7 @@ export function WagoAiTestMachineControl(): React.JSX.Element {
             </div>
           </div>
         </ControlCard>
-        <ControlCard title="Analog Input 4 (4-20mA)">
+        <ControlCard title="Analogeingang 4 (4-20mA)">
           <div className="flex flex-row">
             <MiniGraph
               newData={seriesData.ai4}

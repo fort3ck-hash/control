@@ -118,7 +118,7 @@ export function SidebarLayout() {
     {
       link: "/_sidebar/setup/ethercat",
       activeLink: "/_sidebar/setup",
-      title: "Setup",
+      title: "Einrichtung",
       icon: "lu:Settings2",
     },
   ];

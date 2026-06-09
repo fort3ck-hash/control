@@ -58,7 +58,7 @@ export const MachineSelector: React.FC<MachineSelectorProps> = ({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">
-        <DropdownMenuLabel>Available Machines</DropdownMenuLabel>
+        <DropdownMenuLabel>Verfuegbare Maschinen</DropdownMenuLabel>
         <DropdownMenuSeparator />
         {machines.map((machine) => {
           const isSelected =
@@ -97,7 +97,7 @@ export const MachineSelector: React.FC<MachineSelectorProps> = ({
               className="flex cursor-pointer items-center gap-2 text-red-600 hover:text-red-600"
             >
               <Icon name="lu:Settings" className="text-lg" />
-              <span>Clear Selection</span>
+              <span>Auswahl loeschen</span>
             </DropdownMenuItem>
           </>
         )}

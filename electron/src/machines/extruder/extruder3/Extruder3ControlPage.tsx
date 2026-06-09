@@ -126,42 +126,42 @@ export function Extruder3ControlPage() {
             </StatusBadge>
           ) : state?.inverter_status_state.running == true &&
             state.inverter_status_state.fault_occurence == false ? (
-            <StatusBadge variant="success">Running</StatusBadge>
+            <StatusBadge variant="success">Laeuft</StatusBadge>
           ) : null}
           {state?.inverter_status_state.running == false &&
             state.inverter_status_state.fault_occurence == false && (
-              <StatusBadge variant="success">Healthy</StatusBadge>
+              <StatusBadge variant="success">OK</StatusBadge>
             )}
 
-          <Label label="Regulation">
+          <Label label="Regelung">
             <SelectionGroupBoolean
               value={state?.regulation_state.uses_rpm}
               optionTrue={{ children: "RPM" }}
-              optionFalse={{ children: "Pressure" }}
+              optionFalse={{ children: "Druck" }}
               onChange={setInverterRegulation}
               disabled={isDisabled}
               loading={isLoading}
             />
           </Label>
           <div className="flex flex-row flex-wrap gap-4">
-            <Label label="Target Output RPM">
+            <Label label="Ausgangsdrehzahl Soll">
               <EditValue
                 value={state?.screw_state.target_rpm}
                 defaultValue={defaultState?.screw_state.target_rpm}
                 unit="rpm"
-                title="Target Output RPM"
+                title="Ausgangsdrehzahl Soll"
                 min={0}
                 max={100}
                 renderValue={(value) => roundToDecimals(value, 0)}
                 onChange={setInverterTargetRpm}
               />
             </Label>
-            <Label label="Target Pressure">
+            <Label label="Druck Soll">
               <EditValue
                 value={state?.pressure_state.target_bar}
                 defaultValue={defaultState?.pressure_state.target_bar}
                 unit="bar"
-                title="Target Pressure"
+                title="Druck Soll"
                 min={0.0}
                 max={270.0}
                 renderValue={(value) => roundToDecimals(value, 0)}
@@ -179,11 +179,11 @@ export function Extruder3ControlPage() {
 
             {state?.pressure_state?.wiring_error && (
               <StatusBadge variant="error">
-                Cant Measure Pressure! Check Pressure Sensor Wiring!
+                Druck kann nicht gemessen werden! Drucksensor-Verkabelung pruefen!
               </StatusBadge>
             )}
             <TimeSeriesValueNumeric
-              label="Pressure"
+              label="Druck"
               unit="bar"
               renderValue={(value) => roundToDecimals(value, 1)}
               timeseries={pressure}
@@ -191,32 +191,32 @@ export function Extruder3ControlPage() {
           </div>
         </ControlCard>
 
-        <ControlCard className="bg-red" title="Mode">
+        <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<"Standby" | "Heat" | "Extrude">
             value={state?.mode_state.mode}
             orientation="vertical"
             className="grid h-full grid-cols-2 gap-2"
             options={{
               Standby: {
-                children: "Standby",
+                children: "Bereit",
                 icon: "lu:CirclePause",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
               },
               Heat: {
-                children: "Heat",
+                children: "Heizen",
                 icon: "lu:Flame",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
               },
               Extrude: {
-                children: "Extrude",
+                children: "Extrudieren",
                 icon: "lu:ArrowBigLeftDash",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
                 confirmation: allZonesReadyForExtrude()
                   ? undefined
-                  : "Temperature is too low. Are you sure you want to extrude?",
+                  : "Temperatur ist zu niedrig. Wirklich extrudieren?",
               },
             }}
             onChange={setExtruderMode}

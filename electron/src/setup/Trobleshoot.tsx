@@ -20,12 +20,12 @@ export function TroubleshootPage() {
     try {
       const result = await rebootHmi();
       if (result.success) {
-        toast.success("HMI Panel reboot initiated");
+        toast.success("HMI-Panel-Neustart gestartet");
       } else {
-        toast.error(`Failed to reboot HMI: ${result.error}`);
+        toast.error(`HMI-Neustart fehlgeschlagen: ${result.error}`);
       }
     } catch (error) {
-      toast.error(`Failed to reboot HMI: ${error}`);
+      toast.error(`HMI-Neustart fehlgeschlagen: ${error}`);
     } finally {
       setIsRebootLoading(false);
     }
@@ -36,12 +36,12 @@ export function TroubleshootPage() {
     try {
       const result = await restartBackend();
       if (result.success) {
-        toast.success("Backend service restart initiated");
+        toast.success("Backend-Service-Neustart gestartet");
       } else {
-        toast.error(`Failed to restart backend: ${result.error}`);
+        toast.error(`Backend-Neustart fehlgeschlagen: ${result.error}`);
       }
     } catch (error) {
-      toast.error(`Failed to restart backend: ${error}`);
+      toast.error(`Backend-Neustart fehlgeschlagen: ${error}`);
     } finally {
       setIsRestartLoading(false);
     }
@@ -52,12 +52,12 @@ export function TroubleshootPage() {
     try {
       const result = await exportLogs();
       if (result.success) {
-        toast.success("Export Logs initiated");
+        toast.success("Log-Export gestartet");
       } else {
-        toast.error(`Failed to export Logs: ${result.error}`);
+        toast.error(`Log-Export fehlgeschlagen: ${result.error}`);
       }
     } catch (error) {
-      toast.error(`Failed to export Logs: ${error}`);
+      toast.error(`Log-Export fehlgeschlagen: ${error}`);
     } finally {
       setIsExportLoading(false);
     }
@@ -65,12 +65,10 @@ export function TroubleshootPage() {
 
   return (
     <Page>
-      <SectionTitle title="System Troubleshoot" />
+      <SectionTitle title="Systemfehlersuche" />
 
-      <Alert title="Troubleshoot Actions Info" variant="warning">
-        These actions will temporarily interrupt system operations. The HMI
-        reboot will restart the entire panel, while the backend restart will
-        only restart the control service. Use with caution during production.
+      <Alert title="Hinweis zu Fehlersuche-Aktionen" variant="warning">
+        Diese Aktionen unterbrechen den Anlagenbetrieb kurzzeitig. Der HMI-Neustart startet das komplette Panel neu, waehrend der Backend-Neustart nur den Steuerungsdienst neu startet. Im Produktionsbetrieb vorsichtig verwenden.
       </Alert>
 
       <div className="flex gap-4">

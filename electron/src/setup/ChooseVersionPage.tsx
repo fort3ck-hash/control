@@ -355,32 +355,31 @@ export function ChooseVersionPage() {
   return (
     <Page>
       <div className="flex items-center justify-center">
-        <Alert title="Internet Access Needed" variant="info">
-          You must connect to the internet to fetch the latest versions and
-          update the system.
+        <Alert title="Internetzugang erforderlich" variant="info">
+          Eine Internetverbindung ist erforderlich, um die neuesten Versionen abzurufen und das System zu aktualisieren.
         </Alert>
       </div>
 
       {!window.nixos.isNixOSAvailable && (
         <div className="flex items-center justify-center">
-          <Alert title="NixOS Not Available" variant="warning">
-            NixOS generation management is not available on this system.
+          <Alert title="NixOS nicht verfuegbar" variant="warning">
+            Die NixOS-Generationsverwaltung ist auf diesem System nicht verfuegbar.
           </Alert>
         </div>
       )}
 
-      <SectionTitle title="Current Version"></SectionTitle>
+      <SectionTitle title="Aktuelle Version"></SectionTitle>
       <CurrentVersionCard />
 
       {/* Current Update Status */}
       {isUpdating && currentUpdateInfo && (
         <>
-          <SectionTitle title="Update in Progress"></SectionTitle>
+          <SectionTitle title="Aktualisierung laeuft"></SectionTitle>
           <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
             <div className="mb-3 flex items-center gap-2">
               <LoadingSpinner />
               <span className="font-semibold text-blue-800">
-                Updating System...
+                System wird aktualisiert...
               </span>
             </div>
             <div className="space-y-1 text-sm text-blue-700">
@@ -428,16 +427,16 @@ export function ChooseVersionPage() {
                 });
               }}
             >
-              View Update Progress
+              Aktualisierungsfortschritt anzeigen
             </TouchButton>
           </div>
         </>
       )}
 
-      <SectionTitle title="Update source"></SectionTitle>
+      <SectionTitle title="Aktualisierungsquelle"></SectionTitle>
       <div className="flex flex-row items-center gap-4">
         <div className="flex flex-col">
-          Getting updates from:
+          Aktualisierungen von:
           <a className="font-mono text-blue-500">
             {`https://github.com/${githubSource.githubRepoOwner}/${
               githubSource.githubRepoName
@@ -447,7 +446,7 @@ export function ChooseVersionPage() {
         <GithubSourceDialog value={githubSource} onChange={setGithubSource} />
       </div>
 
-      <span className="text-xl">Choose a Version</span>
+      <span className="text-xl">Version auswaehlen</span>
       {tags !== undefined && tags.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {tags.map((tag) => (
@@ -471,18 +470,18 @@ export function ChooseVersionPage() {
         </div>
       ) : null}
       {tags === undefined && <LoadingSpinner />}
-      {tags?.length == 0 && <>No Versions</>}
+      {tags?.length == 0 && <>Keine Versionen</>}
 
       <Collapsible>
         <CollapsibleTrigger>
           <div className="flex flex-row items-center gap-2">
-            <span className="text-xl">Choose a Branch</span>
+            <span className="text-xl">Branch auswaehlen</span>
             <Icon name="lu:ChevronsUpDown" />
           </div>
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-6">
           <div className="mb-4 flex items-center">
-            <span>Search Branches:</span>
+            <span>Branches suchen:</span>
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -491,7 +490,7 @@ export function ChooseVersionPage() {
           {branches !== undefined && branches.length > 0 ? (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {searchedBranches.length === 0 ? (
-                <i>No branches with your search term</i>
+                <i>Keine Branches zu diesem Suchbegriff</i>
               ) : (
                 searchedBranches.map((branch) => (
                   <UpdateButton
@@ -515,14 +514,14 @@ export function ChooseVersionPage() {
             </div>
           ) : null}
           {branches === undefined && <LoadingSpinner />}
-          {branches?.length == 0 && <>No Branches</>}
+          {branches?.length == 0 && <>Keine Branches</>}
         </CollapsibleContent>
       </Collapsible>
 
       <Collapsible>
         <CollapsibleTrigger>
           <div className="flex flex-row items-center gap-2">
-            <span className="text-xl">Choose a Master Commit</span>
+            <span className="text-xl">Master-Commit auswaehlen</span>
             <Icon name="lu:ChevronsUpDown" />
           </div>
         </CollapsibleTrigger>
@@ -550,15 +549,15 @@ export function ChooseVersionPage() {
             </div>
           ) : null}
           {masterCommits === undefined && <LoadingSpinner />}
-          {masterCommits?.length == 0 && <>No Master Commits</>}
+          {masterCommits?.length == 0 && <>Keine Master-Commits</>}
         </CollapsibleContent>
       </Collapsible>
 
-      <SectionTitle title="Installed Versions"></SectionTitle>
+      <SectionTitle title="Installierte Versionen"></SectionTitle>
 
       {nixosError && (
         <span className="w-full">
-          <Alert title="Error" variant="error">
+          <Alert title="Fehler" variant="error">
             {nixosError}
           </Alert>
         </span>
@@ -580,7 +579,7 @@ export function ChooseVersionPage() {
       {nixosGenerations === undefined && window.nixos.isNixOSAvailable && (
         <LoadingSpinner />
       )}
-      {nixosGenerations?.length === 0 && <>No NixOS generations found</>}
+      {nixosGenerations?.length === 0 && <>Keine NixOS-Generationen gefunden</>}
 
       <DeleteAllButton
         onDeleteAll={() => handleDeleteAllOldGeneration()}

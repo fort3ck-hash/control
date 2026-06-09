@@ -99,7 +99,7 @@ export function PresetCard<T>({
             </div>
           )}
           {isActive && (
-            <span className="text-green-500">This preset is active</span>
+            <span className="text-green-500">Dieses Preset ist aktiv</span>
           )}
         </div>
       </div>

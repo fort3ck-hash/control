@@ -76,39 +76,39 @@ export function MetricsControlPage() {
   return (
     <Page>
       <div className="space-y-6">
-        <SectionTitle title="Backend Metrics" />
+        <SectionTitle title="Backend-Metriken" />
         <div className="grid gap-6 md:grid-cols-2">
           {/* Loop jitter: max, in µs */}
           <MetricCard
-            title="Max Loop Jitter"
+            title="Max. Schleifen-Jitter"
             unit={"µs"}
             value={renderMetricWithUnit(jitterMaxUs, "µs")}
           />
 
           {/* CPU usage */}
           <MetricCard
-            title="CPU Usage"
+            title="CPU-Auslastung"
             unit={"%"}
             value={renderMetricWithUnit(cpuPercent, "%")}
           />
 
           {/* CPU time */}
           <MetricCard
-            title="CPU Time"
+            title="CPU-Zeit"
             unit={"s"}
             value={renderMetricWithUnit(cpuTimeSec, "s")}
           />
 
           {/* Memory usage */}
           <MetricCard
-            title="Memory Usage"
+            title="Speicherauslastung"
             unit={"MiB"}
             value={renderMetricWithUnit(rssMb, "MiB")}
           />
 
           {/* Total page faults (composite, no single unit) */}
           <MetricCard
-            title="Page Faults"
+            title="Seitenfehler"
             value={
               minorFaults != null || majorFaults != null
                 ? `${minorFaults ?? "–"} minor per second | ${majorFaults ?? "–"} major`
@@ -118,7 +118,7 @@ export function MetricsControlPage() {
 
           {/* EtherCAT throughput (RX | TX) */}
           <MetricCard
-            title="EtherCAT Throughput (RX | TX)"
+            title="EtherCAT-Durchsatz (RX | TX)"
             unit={"Mbit/s"}
             value={
               rxMbit != null && txMbit != null ? (
@@ -135,7 +135,7 @@ export function MetricsControlPage() {
 
           {/* Preemptions per second */}
           <MetricCard
-            title="Preemptions"
+            title="Praeemptionen"
             unit={"/s"}
             value={
               preemptionRate != null

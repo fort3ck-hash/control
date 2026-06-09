@@ -98,7 +98,7 @@ export function GithubSourceDialogContent({
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Change Update Source</DialogTitle>
+        <DialogTitle>Aktualisierungsquelle aendern</DialogTitle>
         <DialogDescription>
           In case the update source has to be modified, this is the place to do
           it.
@@ -113,7 +113,7 @@ export function GithubSourceDialogContent({
             name="githubRepoOwner"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>GitHub Repository Owner</FormLabel>
+                <FormLabel>GitHub-Repository-Besitzer</FormLabel>
                 <FormControl>
                   <Input placeholder="qitechgmbh" {...field} />
                 </FormControl>
@@ -130,11 +130,11 @@ export function GithubSourceDialogContent({
             name="githubRepoName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Github Repo Name</FormLabel>
+                <FormLabel>GitHub-Repo-Name</FormLabel>
                 <FormControl>
                   <Input placeholder="control" {...field} />
                 </FormControl>
-                <FormDescription>Github repo name.</FormDescription>
+                <FormDescription>GitHub-Repo-Name.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -145,7 +145,7 @@ export function GithubSourceDialogContent({
             name="githubToken"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Github Token</FormLabel>
+                <FormLabel>GitHub-Token</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="github_pat_..."
@@ -153,14 +153,14 @@ export function GithubSourceDialogContent({
                     value={field.value || ""}
                   />
                 </FormControl>
-                <FormDescription>Github token.</FormDescription>
+                <FormDescription>GitHub-Token.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
           <Separator />
           <Button type="submit" disabled={!form.formState.isValid}>
-            <Icon name="lu:Save" /> Save
+            <Icon name="lu:Save" /> Speichern
           </Button>
         </form>
       </Form>

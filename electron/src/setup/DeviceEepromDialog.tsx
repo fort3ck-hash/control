@@ -154,14 +154,14 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
         setWriteSuccess(true);
         toast(
           <Toast title="Saved" icon="lu:CircleCheck">
-            Saved successfully. Restart required to apply changes.
+            Saved successfully. Neustart erforderlich to apply changes.
           </Toast>,
         );
       }
     });
   };
 
-  // Apply & restart: always save first; if save fails, block restart and show error
+  // Anwenden & neu starten: always save first; if save fails, block restart and show error
   const handleApplyAndRestart = () => {
     if (!confirmIfChangingMachine()) return;
     form.handleSubmit((values) => {
@@ -364,14 +364,13 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl">Machine Assignment</DialogTitle>
+          <DialogTitle className="text-xl">Maschinenzuordnung</DialogTitle>
           <p className="text-base">
             for {device.name}
             <Hex value={device.configured_address} />
           </p>
           <DialogDescription className="text-base">
-            To assign the device to a machine, select the machine, serial number
-            & device role.
+            Um das Geraet einer Maschine zuzuordnen, Maschine, Seriennummer und Geraeterolle auswaehlen.
           </DialogDescription>
         </DialogHeader>
         <Separator />
@@ -387,7 +386,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                   <FormControl>
                     <Select {...field} onValueChange={field.onChange}>
                       <SelectTrigger className="h-12 min-w-48 text-base">
-                        <SelectValue placeholder="Machine" />
+                        <SelectValue placeholder="Maschine" />
                       </SelectTrigger>
                       <SelectContent>
                         {machineProperties.map((machine) => (
@@ -411,7 +410,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
               name="serial"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base">Serial</FormLabel>
+                  <FormLabel className="text-base">Seriennummer</FormLabel>
                   <FormControl>
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center gap-2">
@@ -454,20 +453,20 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Serial number of the machine.
+                    Seriennummer der Maschine.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            {/* Device Role */}
+            {/* Geraeterolle */}
             <FormField
               control={form.control}
               name="role"
               disabled={!machinePreset}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base">Device Role</FormLabel>
+                  <FormLabel className="text-base">Geraeterolle</FormLabel>
                   <FormControl>
                     <Select
                       onValueChange={field.onChange}
@@ -475,7 +474,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                       value={field.value}
                     >
                       <SelectTrigger className="h-12 min-w-48 text-base">
-                        <SelectValue placeholder="Device Role" />
+                        <SelectValue placeholder="Geraeterolle" />
                       </SelectTrigger>
                       <SelectContent>
                         {machinePreset?.device_roles.map((device_role, i) => (
@@ -496,15 +495,15 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
             />
             <Separator />
             {isChangingMachine && (
-              <Alert title="Changing machine assignment" variant="warning">
+              <Alert title="Maschinenzuordnung wird geaendert" variant="warning">
                 This will disconnect the device from its current machine.
-                Restart required; if terminals disappear, use Setup →
+                Neustart erforderlich; if terminals disappear, use Setup →
                 Troubleshoot → Restart backend to rediscover.
               </Alert>
             )}
             {form.formState.isDirty && !writeSuccess && (
               <p className="text-muted-foreground text-sm">
-                Save or Apply & restart for assignment changes to apply.
+                Speichern oder Anwenden & neu starten, damit Zuordnungs-Aenderungen wirksam werden.
               </p>
             )}
             <div className="flex flex-wrap items-center gap-2">
@@ -513,7 +512,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                 disabled={!form.formState.isValid || isApplying}
                 onClick={() => setWriteSuccess(false)}
               >
-                <Icon name="lu:Save" /> Save
+                <Icon name="lu:Save" /> Speichern
               </Button>
               <Button
                 type="button"
@@ -521,7 +520,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                 disabled={!form.formState.isValid || isApplying}
                 onClick={handleApplyAndRestart}
                 aria-busy={isApplying}
-                title="Saves assignment then restarts the backend. Restart is required for changes to take effect."
+                title="Speichert die Zuordnung und startet danach das Backend neu. Der Neustart ist erforderlich, damit Aenderungen wirksam werden."
               >
                 {isApplying ? (
                   <>
@@ -531,7 +530,7 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                 ) : (
                   <>
                     <Icon name="lu:RotateCcw" />
-                    Apply & restart
+                    Anwenden & neu starten
                   </>
                 )}
               </Button>
@@ -541,13 +540,12 @@ export function DeviceEepromDialogContent({ device, setOpen }: ContentProps) {
                   variant="secondary"
                   onClick={() => setOpen()}
                 >
-                  Close
+                  Schliessen
                 </Button>
               )}
             </div>
-            <Alert title="Restart required" variant="info">
-              The backend must be restarted for assignment changes to take
-              effect.
+            <Alert title="Neustart erforderlich" variant="info">
+              Das Backend muss neu gestartet werden, damit Zuordnungs-Aenderungen wirksam werden.
             </Alert>
           </form>
         </Form>

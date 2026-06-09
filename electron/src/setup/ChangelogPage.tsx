@@ -80,7 +80,7 @@ export function ChangelogPage() {
               });
             }}
           >
-            {isUpdating ? "Update in Progress..." : "Update to This Version"}
+            {isUpdating ? "Aktualisierung laeuft..." : "Update to This Version"}
           </TouchButton>
           {changelog === null ? (
             <Alert title="Changelog not found" variant="warning">

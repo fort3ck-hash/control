@@ -25,13 +25,13 @@ export function TestMachineControlPage() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
@@ -50,8 +50,8 @@ export function TestMachineControlPage() {
             value={safeState.led_on.every(Boolean) ? "On" : "Off"}
             orientation="horizontal"
             options={{
-              Off: { children: "Turn All Off" },
-              On: { children: "Turn All On" },
+              Off: { children: "Alle ausschalten" },
+              On: { children: "Alle einschalten" },
             }}
             onChange={(value) => setAllLeds(value === "On")}
           />

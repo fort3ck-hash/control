@@ -14,7 +14,7 @@ export function Wago750430DiMachineControlPage() {
 
   return (
     <Page>
-      <ControlCard title="Digital Inputs">
+      <ControlCard title="Digitaleingaenge">
         <div className="grid grid-cols-2 gap-4">
           {safeState.inputs.map((input, index) => (
             <Label key={index} label={`Input ${index + 1}`}>

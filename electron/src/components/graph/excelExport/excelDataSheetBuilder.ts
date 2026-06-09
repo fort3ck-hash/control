@@ -103,7 +103,7 @@ export class DataSheetBuilder {
 
     statsRows.push(["Graph", this.graphLine.graphTitle]);
     statsRows.push(["Line Name", this.graphLine.lineTitle]);
-    statsRows.push(["Line Color", this.graphLine.color || "Default"]);
+    statsRows.push(["Linienfarbe", this.graphLine.color || "Standard"]);
     statsRows.push(["Generated", this.formatter.formatDate(new Date())]);
     statsRows.push(["", ""]);
     statsRows.push(["Total Data Points", timestamps.length.toString()]);

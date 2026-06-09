@@ -19,7 +19,7 @@ export function Wago8chDioTestMachineControlRoute() {
     <Page>
       <ControlGrid columns={2}>
         {/* Digital Inputs */}
-        <ControlCard title="Digital Inputs">
+        <ControlCard title="Digitaleingaenge">
           <div className="grid grid-cols-2 gap-4">
             {safeState.digital_input.map((input, index) => (
               <Label key={index} label={`Input ${index + 1}`}>
@@ -32,7 +32,7 @@ export function Wago8chDioTestMachineControlRoute() {
         </ControlCard>
 
         {/* Digital Outputs */}
-        <ControlCard title="Digital Outputs">
+        <ControlCard title="Digitalausgaenge">
           <div className="grid grid-cols-2 gap-4">
             {safeState.digital_output.map((output, index) => (
               <Label key={index} label={`Output ${index + 1}`}>
@@ -42,13 +42,13 @@ export function Wago8chDioTestMachineControlRoute() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",

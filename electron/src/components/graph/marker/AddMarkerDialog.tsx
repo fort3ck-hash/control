@@ -37,7 +37,7 @@ export function AddMarkerDialog({
   const [selectedTimestamp, setSelectedTimestamp] = useState<number | null>(
     null,
   );
-  const [color, setColor] = useState("#000000");
+  const [color, setFarbe] = useState("#000000");
   const inputRef = useRef<HTMLInputElement>(null);
   // Shown when user tries to add a marker whose name already exists
   const [duplicateNameError, setDuplicateNameError] = useState(false);
@@ -115,7 +115,7 @@ export function AddMarkerDialog({
         <div className="flex flex-col gap-4">
           {/* Name Input */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="marker-name">Marker Name</Label>
+            <Label htmlFor="marker-name">Marker-Name</Label>
             <div className="flex gap-3">
               <Input
                 id="marker-name"
@@ -152,7 +152,7 @@ export function AddMarkerDialog({
 
           {/* Time Input (optional) */}
           <div className="flex flex-col gap-2">
-            <Label>Time (optional)</Label>
+            <Label>Zeit (optional)</Label>
             <TimeInput
               timestamp={selectedTimestamp}
               onTimeChange={setSelectedTimestamp}
@@ -163,21 +163,21 @@ export function AddMarkerDialog({
             </p>
           </div>
 
-          {/* Color Input */}
+          {/* Farbe Input */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="marker-color">Color</Label>
+            <Label htmlFor="marker-color">Farbe</Label>
             <div className="flex items-center gap-3">
               <input
                 id="marker-color"
                 type="color"
                 value={color}
-                onChange={(e) => setColor(e.target.value)}
+                onChange={(e) => setFarbe(e.target.value)}
                 className="border-input h-9 w-20 cursor-pointer rounded-md border"
               />
               <Input
                 type="text"
                 value={color}
-                onChange={(e) => setColor(e.target.value)}
+                onChange={(e) => setFarbe(e.target.value)}
                 placeholder="#000000"
               />
             </div>

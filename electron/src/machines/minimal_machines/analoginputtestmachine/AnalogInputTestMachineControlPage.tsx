@@ -10,12 +10,12 @@ export function AnalogInputTestMachineControl(): React.JSX.Element {
   const { seriesData, state, updateMeasurementRate } =
     useAnalogInputTestMachine();
 
-  if (!seriesData) return <div>Initializing Sensor...</div>;
+  if (!seriesData) return <div>Sensor wird initialisiert...</div>;
 
   return (
     <Page>
       <ControlGrid columns={2}>
-        <ControlCard title="Measurement Control">
+        <ControlCard title="Messsteuerung">
           <div
             style={{
               display: "flex",
@@ -23,7 +23,7 @@ export function AnalogInputTestMachineControl(): React.JSX.Element {
               justifyContent: "space-between",
             }}
           >
-            <div>Measurement Rate (Hz)</div>
+            <div>Messrate (Hz)</div>
             <input
               type="number"
               style={{

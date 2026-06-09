@@ -12,14 +12,14 @@ export function Buffer1ControlPage() {
   return (
     <Page>
       <ControlGrid>
-        <ControlCard className="bg-red" title="Mode">
+        <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<"Standby" | "FillingBuffer" | "EmptyingBuffer">
             value={state?.mode_state.mode}
             orientation="vertical"
             className="grid h-full grid-cols-2 gap-2"
             options={{
               Standby: {
-                children: "Standby",
+                children: "Bereit",
                 icon: "lu:CirclePause",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",

@@ -65,13 +65,13 @@ export function MyMachineControlPage() {
                   className="flex flex-col gap-3"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "flex-1",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "flex-1",
@@ -93,8 +93,8 @@ export function MyMachineControlPage() {
             value={safeState.outputs.every(Boolean) ? "On" : "Off"}
             orientation="horizontal"
             options={{
-              Off: { children: "Turn All Off" },
-              On: { children: "Turn All On" },
+              Off: { children: "Alle ausschalten" },
+              On: { children: "Alle einschalten" },
             }}
             onChange={(value) => setAllOutputs(value === "On")}
           />

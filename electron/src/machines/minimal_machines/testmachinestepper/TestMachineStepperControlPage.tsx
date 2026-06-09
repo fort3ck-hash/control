@@ -16,10 +16,10 @@ export function TestMachineStepperControlPage() {
     <Page>
       <ControlGrid columns={2}>
         <ControlCard title="Stepper Speed">
-          <Label label="Target Speed">
+          <Label label="Sollgeschwindigkeit">
             <EditValue
               value={state?.target_speed}
-              title="Target Speed"
+              title="Sollgeschwindigkeit"
               defaultValue={0}
               min={-25000}
               max={25000}
@@ -85,7 +85,7 @@ export function TestMachineStepperControlPage() {
             High (11)
           </TouchButton>
         </ControlCard>
-        <ControlCard height={2} title="Acceleration Factor">
+        <ControlCard height={2} title="Beschleunigungsfaktor">
           <TouchButton
             variant="outline"
             icon="lu:CirclePower"

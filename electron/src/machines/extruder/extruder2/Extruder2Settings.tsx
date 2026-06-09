@@ -33,17 +33,17 @@ export function Extruder2SettingsPage() {
 
   return (
     <Page>
-      <ControlCard className="bg-red" title="Inverter Settings">
-        <Label label="Rotation Direction">
+      <ControlCard className="bg-red" title="Umrichter-Einstellungen">
+        <Label label="Drehrichtung">
           <SelectionGroupBoolean
             value={state?.rotation_state.forward}
-            optionTrue={{ children: "Forward" }}
-            optionFalse={{ children: "Backward" }}
+            optionTrue={{ children: "Vorwaerts" }}
+            optionFalse={{ children: "Rueckwaerts" }}
             onChange={setInverterRotationDirection}
           />
         </Label>
 
-        <Label label="Reset Inverter">
+        <Label label="Umrichter zuruecksetzen">
           <button
             onClick={resetInverter}
             className="inline-block w-fit max-w-max rounded bg-red-600 px-4 py-4 text-base whitespace-nowrap text-white hover:bg-red-700"
@@ -54,42 +54,42 @@ export function Extruder2SettingsPage() {
         </Label>
       </ControlCard>
 
-      <ControlCard className="bg-red" title="Extruder Settings">
-        <Label label="Nozzle Pressure Limit">
+      <ControlCard className="bg-red" title="Extruder-Einstellungen">
+        <Label label="Duesen-Druckgrenze">
           <EditValue
             value={state?.extruder_settings_state.pressure_limit}
             defaultValue={defaultState?.extruder_settings_state.pressure_limit}
             unit="bar"
-            title="Nozzle Pressure Limit"
+            title="Duesen-Druckgrenze"
             min={0}
             max={350}
             renderValue={(value) => roundToDecimals(value, 0)}
             onChange={setExtruderPressureLimit}
           />
         </Label>
-        <Label label="Nozzle Pressure Limit Enabled">
+        <Label label="Duesen-Druckgrenze aktiviert">
           <SelectionGroupBoolean
             value={state?.extruder_settings_state.pressure_limit_enabled}
-            optionTrue={{ children: "Enabled" }}
-            optionFalse={{ children: "Disabled" }}
+            optionTrue={{ children: "Aktiviert" }}
+            optionFalse={{ children: "Deaktiviert" }}
             onChange={setExtruderPressureLimitEnabled}
           />
         </Label>
-        <Label label="Nozzle Temperature Target Enabled">
+        <Label label="Duesen-Temperatursollwert aktiviert">
           <SelectionGroupBoolean
             value={
               state?.extruder_settings_state.nozzle_temperature_target_enabled
             }
-            optionTrue={{ children: "Enabled" }}
-            optionFalse={{ children: "Disabled" }}
+            optionTrue={{ children: "Aktiviert" }}
+            optionFalse={{ children: "Deaktiviert" }}
             onChange={setTemperatureTargetEnabled}
           />
         </Label>
-        <Label label="Show Advanced PID Settings">
+        <Label label="Erweiterte PID-Einstellungen anzeigen">
           <SelectionGroupBoolean
             value={showAdvanced}
-            optionTrue={{ children: "Show" }}
-            optionFalse={{ children: "Hide" }}
+            optionTrue={{ children: "Anzeigen" }}
+            optionFalse={{ children: "Ausblenden" }}
             onChange={setShowAdvanced}
           />
         </Label>
@@ -98,7 +98,7 @@ export function Extruder2SettingsPage() {
       {showAdvanced && (
         <>
           <ControlGrid columns={2}>
-            <ControlCard title="Pressure PID Settings">
+            <ControlCard title="Druck-PID-Einstellungen">
               <Label label="Kp">
                 <EditValue
                   value={state?.pid_settings.pressure.kp}
@@ -108,7 +108,7 @@ export function Extruder2SettingsPage() {
                   step={0.01}
                   renderValue={(v) => roundToDecimals(v, 2)}
                   onChange={setPressurePidKp}
-                  title="Pressure PID KP"
+                  title="Druck-PID KP"
                 />
               </Label>
               <Label label="Ki">
@@ -120,7 +120,7 @@ export function Extruder2SettingsPage() {
                   step={0.01}
                   renderValue={(v) => roundToDecimals(v, 2)}
                   onChange={setPressurePidKi}
-                  title="Pressure PID KI"
+                  title="Druck-PID KI"
                 />
               </Label>
               <Label label="Kd">
@@ -132,41 +132,39 @@ export function Extruder2SettingsPage() {
                   step={0.01}
                   renderValue={(v) => roundToDecimals(v, 2)}
                   onChange={setPressurePidKd}
-                  title="Pressure PID KD"
+                  title="Druck-PID KD"
                 />
               </Label>
             </ControlCard>
-            <ControlCard title="Pressure PID Auto-Tune">
+            <ControlCard title="Druck-PID-Auto-Tune">
               <Alert className="mt-2 border-yellow-500/50 bg-yellow-500/10">
                 <AlertTitle className="text-yellow-600">
-                  Read the Manual First
+                  Zuerst das Handbuch lesen
                 </AlertTitle>
                 <AlertDescription>
-                  Please read section 2.3.1 Adaptive Pressure PID Auto-Tuning in
-                  the manual for important prerequisites and step-by-step
-                  instructions before using this feature.
+                  Bitte vor der Verwendung Abschnitt 2.3.1 Adaptive Druck-PID-Auto-Tune im Handbuch lesen. Dort stehen wichtige Voraussetzungen und die Schritt-fuer-Schritt-Anleitung.
                 </AlertDescription>
               </Alert>
-              <Label label="Target Pressure">
+              <Label label="Druck Soll">
                 <EditValue
                   value={state?.pressure_state.target_bar}
                   defaultValue={defaultState?.pressure_state.target_bar}
                   unit="bar"
-                  title="Target Pressure for Tuning"
-                  description="The pressure setpoint around which the tuner will oscillate"
+                  title="Drucksollwert fuer Abstimmung"
+                  description="Drucksollwert, um den der Auto-Tune schwingt"
                   min={0}
                   max={40}
                   renderValue={(v) => roundToDecimals(v, 1)}
                   onChange={setInverterTargetPressure}
                 />
               </Label>
-              <Label label="Tune Delta">
+              <Label label="Abstimm-Delta">
                 <EditValue
                   value={tuneDelta}
                   defaultValue={1.0}
                   unit="bar"
-                  title="Tune Delta"
-                  description="Allowed pressure oscillation band around target"
+                  title="Abstimm-Delta"
+                  description="Erlaubtes Druck-Schwingungsband um den Sollwert"
                   min={0.1}
                   max={5}
                   step={0.1}
@@ -174,12 +172,12 @@ export function Extruder2SettingsPage() {
                   onChange={setTuneDelta}
                 />
               </Label>
-              <Label label="Frequency Step">
+              <Label label="Frequenzschritt">
                 <EditValue
                   value={frequencyStepHz}
                   defaultValue={2.5}
-                  title="Frequency Step (Hz)"
-                  description="Inverter frequency deviation around operating point"
+                  title="Frequenzschritt (Hz)"
+                  description="Umrichter-Frequenzabweichung um den Arbeitspunkt"
                   min={1}
                   max={5}
                   step={0.25}
@@ -187,10 +185,10 @@ export function Extruder2SettingsPage() {
                   onChange={setFrequencyStepHz}
                 />
               </Label>
-              <Label label="Actions">
+              <Label label="Aktionen">
                 {state?.regulation_state.uses_rpm !== false && (
                   <p className="mb-2 text-sm text-amber-600">
-                    Pressure regulation mode must be active to start auto-tune.
+                    Druckregelung muss aktiv sein, um Auto-Tune zu starten.
                   </p>
                 )}
                 <div className="flex gap-4">
@@ -204,7 +202,7 @@ export function Extruder2SettingsPage() {
                     }
                     className="inline-block w-fit rounded bg-blue-600 px-4 py-4 text-base text-white hover:bg-blue-700 disabled:opacity-50"
                   >
-                    Start Auto-Tune
+                    Auto-Tune starten
                   </button>
                   <button
                     onClick={stopPressurePidAutoTune}
@@ -241,7 +239,7 @@ export function Extruder2SettingsPage() {
                 </div>
               </Label>
               {state?.pid_autotune_state.result && (
-                <Label label="Result">
+                <Label label="Ergebnis">
                   <span className="text-sm">
                     Kp: {roundToDecimals(state.pid_autotune_state.result.kp, 4)}
                     &nbsp;&nbsp; Ki:{" "}
@@ -254,7 +252,7 @@ export function Extruder2SettingsPage() {
             </ControlCard>
           </ControlGrid>
           <ControlGrid>
-            <ControlCard title="Temperature PID Settings (Front) ">
+            <ControlCard title="Temperatur-PID-Einstellungen (Heizzone 3) ">
               <Label label="Kp">
                 <EditValue
                   value={state?.pid_settings.temperature.front.kp}
@@ -264,7 +262,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("front", "kp", v)}
-                  title="Temperature PID KP"
+                  title="Temperatur-PID KP"
                 />
               </Label>
               <Label label="Ki">
@@ -276,7 +274,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("front", "ki", v)}
-                  title="Temperature PID KI"
+                  title="Temperatur-PID KI"
                 />
               </Label>
               <Label label="Kd">
@@ -288,11 +286,11 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("front", "kd", v)}
-                  title="Temperature PID KD"
+                  title="Temperatur-PID KD"
                 />
               </Label>
             </ControlCard>
-            <ControlCard title="Temperature PID Settings (Middle) ">
+            <ControlCard title="Temperatur-PID-Einstellungen (Heizzone 2) ">
               <Label label="Kp">
                 <EditValue
                   value={state?.pid_settings.temperature.middle.kp}
@@ -304,7 +302,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("middle", "kp", v)}
-                  title="Temperature PID KP"
+                  title="Temperatur-PID KP"
                 />
               </Label>
               <Label label="Ki">
@@ -318,7 +316,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("middle", "ki", v)}
-                  title="Temperature PID KI"
+                  title="Temperatur-PID KI"
                 />
               </Label>
               <Label label="Kd">
@@ -332,11 +330,11 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("middle", "kd", v)}
-                  title="Temperature PID KD"
+                  title="Temperatur-PID KD"
                 />
               </Label>
             </ControlCard>
-            <ControlCard title="Temperature PID Settings (Back) ">
+            <ControlCard title="Temperatur-PID-Einstellungen (Heizzone 1) ">
               <Label label="Kp">
                 <EditValue
                   value={state?.pid_settings.temperature.back.kp}
@@ -346,7 +344,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("back", "kp", v)}
-                  title="Temperature PID KP"
+                  title="Temperatur-PID KP"
                 />
               </Label>
               <Label label="Ki">
@@ -358,7 +356,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("back", "ki", v)}
-                  title="Temperature PID KI"
+                  title="Temperatur-PID KI"
                 />
               </Label>
               <Label label="Kd">
@@ -370,11 +368,11 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("back", "kd", v)}
-                  title="Temperature PID KD"
+                  title="Temperatur-PID KD"
                 />
               </Label>
             </ControlCard>
-            <ControlCard title="Temperature PID Settings (Nozzle) ">
+            <ControlCard title="Temperatur-PID-Einstellungen (Duese) ">
               <Label label="Kp">
                 <EditValue
                   value={state?.pid_settings.temperature.nozzle.kp}
@@ -386,7 +384,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("nozzle", "kp", v)}
-                  title="Temperature PID KP"
+                  title="Temperatur-PID KP"
                 />
               </Label>
               <Label label="Ki">
@@ -400,7 +398,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("nozzle", "ki", v)}
-                  title="Temperature PID KI"
+                  title="Temperatur-PID KI"
                 />
               </Label>
               <Label label="Kd">
@@ -414,7 +412,7 @@ export function Extruder2SettingsPage() {
                   step={0.001}
                   renderValue={(v) => roundToDecimals(v, 3)}
                   onChange={(v) => setTemperaturePidValue("nozzle", "kd", v)}
-                  title="Temperature PID KD"
+                  title="Temperatur-PID KD"
                 />
               </Label>
             </ControlCard>

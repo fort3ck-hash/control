@@ -9,7 +9,7 @@ export function SetupPage() {
         {
           link: "machines",
           activeLink: "machines",
-          title: "Machines",
+          title: "Maschinen",
           icon: "lu:Factory",
         },
         {
@@ -21,19 +21,19 @@ export function SetupPage() {
         {
           link: "update/choose-version",
           activeLink: "update",
-          title: "Update",
+          title: "Aktualisierung",
           icon: "lu:CircleFadingArrowUp",
         },
         {
           link: "troubleshoot",
           activeLink: "troubleshoot",
-          title: "Troubleshoot",
+          title: "Fehlersuche",
           icon: "lu:MessageSquareWarning",
         },
         {
           link: "metrics",
           activeLink: "metrics",
-          title: "Metrics",
+          title: "Metriken",
           icon: "lu:Activity",
         },
       ]}

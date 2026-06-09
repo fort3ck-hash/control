@@ -48,7 +48,7 @@ export function PresetShowDialog<T>({
             <span className="w-100 text-center">{preset.name}</span>
           </DialogTitle>
           <DialogDescription>
-            Applying presets carelessly might damage machines.
+            Unvorsichtiges Anwenden von Presets kann Maschinen beschaedigen.
           </DialogDescription>
         </DialogHeader>
         <Separator />
@@ -56,7 +56,7 @@ export function PresetShowDialog<T>({
         <div className="flex flex-col gap-6 text-sm">
           {!hideDate && (
             <div>
-              Latest modification at{" "}
+              Letzte Aenderung am{" "}
               {preset.lastModified.toLocaleString() || "N/A"}
             </div>
           )}

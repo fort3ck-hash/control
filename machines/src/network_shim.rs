@@ -13,8 +13,8 @@ use smol::channel::{Receiver, Sender, bounded};
 use tracing::{info, warn};
 
 use crate::{
-    AsyncThreadMessage, Machine, MachineAct, MachineApi,
-    MachineMessage, MachineValues, MACHINE_EXTRUDER_V2, VENDOR_QITECH,
+    AsyncThreadMessage, MACHINE_EXTRUDER_V2, Machine, MachineAct, MachineApi, MachineMessage,
+    MachineValues, VENDOR_QITECH,
     extruder1::{
         ExtruderV2Mode,
         api::{
@@ -29,11 +29,22 @@ use crate::{
 use control_core::socketio::namespace::NamespaceCacheingLogic;
 
 pub const NETWORK_SHIM_SERIAL: u16 = 0xB001;
-const PRESSURE_CONTROL_INTERVAL_S: u64 = 1;
-const PRESSURE_CONTROL_DEADBAND_BAR: f64 = 0.5;
-const PRESSURE_CONTROL_KP_RPM_PER_BAR: f64 = 0.2;
-const PRESSURE_CONTROL_KI_RPM_PER_BAR_S: f64 = 0.02;
+const PRESSURE_CONTROL_INTERVAL_S: u64 = 3;
+const PRESSURE_CONTROL_STABILITY_DURATION_S: u64 = 120;
+const PRESSURE_CONTROL_STABILITY_BAND_BAR: f64 = 10.0;
+const PRESSURE_CONTROL_MIN_ACTIVE_PRESSURE_BAR: f64 = 5.0;
+const PRESSURE_CONTROL_DEADBAND_BAR: f64 = 1.0;
+const PRESSURE_CONTROL_KP_RPM_PER_BAR: f64 = 0.006;
+const PRESSURE_CONTROL_KI_RPM_PER_BAR_S: f64 = 0.0004;
+const PRESSURE_CONTROL_INTEGRAL_LIMIT: f64 = 250.0;
+const PRESSURE_CONTROL_BASE_MAX_STEP_RPM: f64 = 0.3;
+const PRESSURE_CONTROL_MIN_STEP_RPM: f64 = 0.1;
 const PRESSURE_CONTROL_MAX_RPM: f64 = 44.0;
+const PRESSURE_CONTROL_GAIN_MIN: f64 = 0.2;
+const PRESSURE_CONTROL_GAIN_MAX: f64 = 1.0;
+const PRESSURE_CONTROL_OSCILLATION_GAIN_FACTOR: f64 = 0.65;
+const PRESSURE_CONTROL_WORSENING_GAIN_FACTOR: f64 = 0.85;
+const PRESSURE_CONTROL_RECOVERY_GAIN_FACTOR: f64 = 1.03;
 
 // ---------------------------------------------------------------------------
 // Minimal HTTP helpers using only stdlib — no TLS needed (local HTTP only)
@@ -64,7 +75,9 @@ fn http_get(url: &str, timeout: Duration) -> Option<String> {
     let mut response = Vec::new();
     stream.read_to_end(&mut response).ok()?;
     let response = String::from_utf8_lossy(&response).into_owned();
-    response.find("\r\n\r\n").map(|i| response[i + 4..].to_string())
+    response
+        .find("\r\n\r\n")
+        .map(|i| response[i + 4..].to_string())
 }
 
 fn http_post_json(url: &str, body: &str, timeout: Duration) {
@@ -78,7 +91,10 @@ fn http_post_json(url: &str, body: &str, timeout: Duration) {
     let _ = stream.set_read_timeout(Some(timeout));
     let request = format!(
         "POST {} HTTP/1.0\r\nHost: {}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-        path, host_port, body.len(), body
+        path,
+        host_port,
+        body.len(),
+        body
     );
     let _ = stream.write_all(request.as_bytes());
     let mut buf = [0u8; 256];
@@ -118,6 +134,13 @@ pub struct NetworkShimMachine {
     target_temps: [f64; 4],
     pressure_integral: f64,
     last_pressure_control: Instant,
+    pressure_control_armed: bool,
+    pressure_window_start: Option<Instant>,
+    pressure_window_min: f64,
+    pressure_window_max: f64,
+    pressure_adaptive_gain: f64,
+    last_pressure_error: Option<f64>,
+    last_pressure_abs_error: Option<f64>,
     emitted_default_state: bool,
     last_emit: Instant,
 }
@@ -134,45 +157,47 @@ impl NetworkShimMachine {
             let url = base_url.clone();
             std::thread::Builder::new()
                 .name("winex-shim-poller".into())
-                .spawn(move || loop {
-                    let endpoint = format!("{url}/api/v1/live_values");
-                    match http_get(&endpoint, Duration::from_millis(600)) {
-                        Some(body) => {
-                            if let Ok(json) = serde_json::from_str::<Value>(&body) {
-                                let mut c = cache.lock().unwrap();
-                                if let Some(v) =
-                                    json.pointer("/motor_status/rpm").and_then(Value::as_f64)
-                                {
-                                    c.rpm = v;
-                                }
-                                if let Some(v) = json.get("pressure").and_then(Value::as_f64) {
-                                    c.pressure = v;
-                                }
-                                if let Some(t) = json.get("temperatures") {
-                                    for (i, key) in
-                                        ["front", "middle", "back", "nozzle"].iter().enumerate()
+                .spawn(move || {
+                    loop {
+                        let endpoint = format!("{url}/api/v1/live_values");
+                        match http_get(&endpoint, Duration::from_millis(600)) {
+                            Some(body) => {
+                                if let Ok(json) = serde_json::from_str::<Value>(&body) {
+                                    let mut c = cache.lock().unwrap();
+                                    if let Some(v) =
+                                        json.pointer("/motor_status/rpm").and_then(Value::as_f64)
                                     {
-                                        if let Some(v) = t.get(*key).and_then(Value::as_f64) {
-                                            c.temps[i] = v;
+                                        c.rpm = v;
+                                    }
+                                    if let Some(v) = json.get("pressure").and_then(Value::as_f64) {
+                                        c.pressure = v;
+                                    }
+                                    if let Some(t) = json.get("temperatures") {
+                                        for (i, key) in
+                                            ["front", "middle", "back", "nozzle"].iter().enumerate()
+                                        {
+                                            if let Some(v) = t.get(*key).and_then(Value::as_f64) {
+                                                c.temps[i] = v;
+                                            }
                                         }
                                     }
-                                }
-                                if let Some(v) = json
-                                    .pointer("/motor_status/drive_active")
-                                    .and_then(Value::as_bool)
-                                {
-                                    c.drive_active = v;
-                                }
-                                if let Some(v) =
-                                    json.get("tempering_enabled").and_then(Value::as_bool)
-                                {
-                                    c.tempering_active = v;
+                                    if let Some(v) = json
+                                        .pointer("/motor_status/drive_active")
+                                        .and_then(Value::as_bool)
+                                    {
+                                        c.drive_active = v;
+                                    }
+                                    if let Some(v) =
+                                        json.get("tempering_enabled").and_then(Value::as_bool)
+                                    {
+                                        c.tempering_active = v;
+                                    }
                                 }
                             }
+                            None => warn!("NetworkShimMachine poller: request failed"),
                         }
-                        None => warn!("NetworkShimMachine poller: request failed"),
+                        std::thread::sleep(Duration::from_millis(200));
                     }
-                    std::thread::sleep(Duration::from_millis(200));
                 })
                 .expect("failed to spawn poller thread");
         }
@@ -218,6 +243,13 @@ impl NetworkShimMachine {
             target_temps: [160.0, 160.0, 160.0, 160.0],
             pressure_integral: 0.0,
             last_pressure_control: Instant::now(),
+            pressure_control_armed: false,
+            pressure_window_start: None,
+            pressure_window_min: 0.0,
+            pressure_window_max: 0.0,
+            pressure_adaptive_gain: 1.0,
+            last_pressure_error: None,
+            last_pressure_abs_error: None,
             emitted_default_state: false,
             last_emit: Instant::now(),
         }
@@ -256,18 +288,36 @@ impl NetworkShimMachine {
         StateEvent {
             is_default_state: is_default,
             rotation_state: RotationState { forward: true },
-            mode_state: ModeState { mode: self.mode.clone() },
-            regulation_state: RegulationState { uses_rpm: self.uses_rpm },
+            mode_state: ModeState {
+                mode: self.mode.clone(),
+            },
+            regulation_state: RegulationState {
+                uses_rpm: self.uses_rpm,
+            },
             pressure_state: PressureState {
                 target_bar: self.target_pressure,
                 wiring_error: false,
             },
-            screw_state: ScrewState { target_rpm: self.target_rpm },
+            screw_state: ScrewState {
+                target_rpm: self.target_rpm,
+            },
             heating_states: HeatingStates {
-                front:  HeatingState { target_temperature: self.target_temps[0], wiring_error: false },
-                middle: HeatingState { target_temperature: self.target_temps[1], wiring_error: false },
-                back:   HeatingState { target_temperature: self.target_temps[2], wiring_error: false },
-                nozzle: HeatingState { target_temperature: self.target_temps[3], wiring_error: false },
+                front: HeatingState {
+                    target_temperature: self.target_temps[0],
+                    wiring_error: false,
+                },
+                middle: HeatingState {
+                    target_temperature: self.target_temps[1],
+                    wiring_error: false,
+                },
+                back: HeatingState {
+                    target_temperature: self.target_temps[2],
+                    wiring_error: false,
+                },
+                nozzle: HeatingState {
+                    target_temperature: self.target_temps[3],
+                    wiring_error: false,
+                },
             },
             extruder_settings_state: ExtruderSettingsState {
                 pressure_limit: 200.0,
@@ -287,12 +337,36 @@ impl NetworkShimMachine {
             },
             pid_settings: PidSettingsStates {
                 temperature: TemperaturePidStates {
-                    front:  TemperaturePid { ki: 0.0, kp: 1.0, kd: 0.0, zone: "front".into() },
-                    middle: TemperaturePid { ki: 0.0, kp: 1.0, kd: 0.0, zone: "middle".into() },
-                    back:   TemperaturePid { ki: 0.0, kp: 1.0, kd: 0.0, zone: "back".into() },
-                    nozzle: TemperaturePid { ki: 0.0, kp: 1.0, kd: 0.0, zone: "nozzle".into() },
+                    front: TemperaturePid {
+                        ki: 0.0,
+                        kp: 1.0,
+                        kd: 0.0,
+                        zone: "front".into(),
+                    },
+                    middle: TemperaturePid {
+                        ki: 0.0,
+                        kp: 1.0,
+                        kd: 0.0,
+                        zone: "middle".into(),
+                    },
+                    back: TemperaturePid {
+                        ki: 0.0,
+                        kp: 1.0,
+                        kd: 0.0,
+                        zone: "back".into(),
+                    },
+                    nozzle: TemperaturePid {
+                        ki: 0.0,
+                        kp: 1.0,
+                        kd: 0.0,
+                        zone: "nozzle".into(),
+                    },
                 },
-                pressure: PidSettings { ki: 0.0, kp: 1.0, kd: 0.0 },
+                pressure: PidSettings {
+                    ki: 0.0,
+                    kp: 1.0,
+                    kd: 0.0,
+                },
             },
             pid_autotune_state: PidAutoTuneState::default(),
         }
@@ -321,11 +395,107 @@ impl NetworkShimMachine {
         }
     }
 
+    fn reset_pressure_control_tracking(&mut self, now: Instant) {
+        self.pressure_integral = 0.0;
+        self.last_pressure_control = now;
+        self.pressure_control_armed = false;
+        self.pressure_window_start = None;
+        self.pressure_window_min = 0.0;
+        self.pressure_window_max = 0.0;
+        self.pressure_adaptive_gain = 1.0;
+        self.last_pressure_error = None;
+        self.last_pressure_abs_error = None;
+    }
+
+    fn pressure_is_stable_enough_to_regulate(&mut self, now: Instant, pressure: f64) -> bool {
+        if pressure < PRESSURE_CONTROL_MIN_ACTIVE_PRESSURE_BAR {
+            self.reset_pressure_control_tracking(now);
+            return false;
+        }
+
+        let Some(window_start) = self.pressure_window_start else {
+            self.pressure_window_start = Some(now);
+            self.pressure_window_min = pressure;
+            self.pressure_window_max = pressure;
+            return false;
+        };
+
+        self.pressure_window_min = self.pressure_window_min.min(pressure);
+        self.pressure_window_max = self.pressure_window_max.max(pressure);
+
+        if self.pressure_window_max - self.pressure_window_min > PRESSURE_CONTROL_STABILITY_BAND_BAR
+        {
+            self.pressure_control_armed = false;
+            self.pressure_integral = 0.0;
+            self.pressure_window_start = Some(now);
+            self.pressure_window_min = pressure;
+            self.pressure_window_max = pressure;
+            self.last_pressure_error = None;
+            self.last_pressure_abs_error = None;
+            return false;
+        }
+
+        if now.duration_since(window_start)
+            < Duration::from_secs(PRESSURE_CONTROL_STABILITY_DURATION_S)
+        {
+            return false;
+        }
+
+        if !self.pressure_control_armed {
+            self.pressure_control_armed = true;
+            self.pressure_integral = 0.0;
+            self.last_pressure_control = now;
+            self.last_pressure_error = None;
+            self.last_pressure_abs_error = None;
+        }
+
+        true
+    }
+
+    fn adapt_pressure_control_gain(&mut self, error: f64) {
+        let abs_error = error.abs();
+
+        if let Some(previous_error) = self.last_pressure_error {
+            let crossed_target = previous_error.signum() != error.signum()
+                && previous_error.abs() > PRESSURE_CONTROL_DEADBAND_BAR
+                && abs_error > PRESSURE_CONTROL_DEADBAND_BAR;
+
+            if crossed_target {
+                self.pressure_adaptive_gain *= PRESSURE_CONTROL_OSCILLATION_GAIN_FACTOR;
+                self.pressure_integral *= 0.5;
+            } else if let Some(previous_abs_error) = self.last_pressure_abs_error {
+                if abs_error > previous_abs_error + PRESSURE_CONTROL_DEADBAND_BAR {
+                    self.pressure_adaptive_gain *= PRESSURE_CONTROL_WORSENING_GAIN_FACTOR;
+                    self.pressure_integral *= 0.8;
+                } else if abs_error < previous_abs_error {
+                    self.pressure_adaptive_gain *= PRESSURE_CONTROL_RECOVERY_GAIN_FACTOR;
+                }
+            }
+        }
+
+        self.pressure_adaptive_gain = self
+            .pressure_adaptive_gain
+            .clamp(PRESSURE_CONTROL_GAIN_MIN, PRESSURE_CONTROL_GAIN_MAX);
+        self.last_pressure_error = Some(error);
+        self.last_pressure_abs_error = Some(abs_error);
+    }
+
+    fn quantize_rpm(rpm: f64) -> f64 {
+        (rpm * 10.0).round() / 10.0
+    }
+
     fn update_pressure_regulation(&mut self, now: Instant) {
         if self.uses_rpm
             || self.mode != ExtruderV2Mode::Extrude
             || self.target_pressure <= 0.0
             || self.target_rpm <= 0.0
+        {
+            self.reset_pressure_control_tracking(now);
+            return;
+        }
+
+        let pressure = self.cache.lock().unwrap().pressure;
+        if !self.pressure_is_stable_enough_to_regulate(now, pressure)
             || now.duration_since(self.last_pressure_control)
                 < Duration::from_secs(PRESSURE_CONTROL_INTERVAL_S)
         {
@@ -338,21 +508,30 @@ impl NetworkShimMachine {
             .max(0.001);
         self.last_pressure_control = now;
 
-        let pressure = self.cache.lock().unwrap().pressure;
         let error = self.target_pressure - pressure;
         if error.abs() <= PRESSURE_CONTROL_DEADBAND_BAR {
+            self.pressure_integral *= 0.8;
+            self.last_pressure_error = Some(error);
+            self.last_pressure_abs_error = Some(error.abs());
             return;
         }
 
-        self.pressure_integral =
-            (self.pressure_integral + error * elapsed_s).clamp(-100.0, 100.0);
+        self.adapt_pressure_control_gain(error);
+        self.pressure_integral = (self.pressure_integral + error * elapsed_s).clamp(
+            -PRESSURE_CONTROL_INTEGRAL_LIMIT,
+            PRESSURE_CONTROL_INTEGRAL_LIMIT,
+        );
 
-        let rpm_delta =
-            error * PRESSURE_CONTROL_KP_RPM_PER_BAR
-                + self.pressure_integral * PRESSURE_CONTROL_KI_RPM_PER_BAR_S;
-        let next_rpm = (self.target_rpm + rpm_delta).clamp(0.0, PRESSURE_CONTROL_MAX_RPM);
+        let rpm_delta = (error * PRESSURE_CONTROL_KP_RPM_PER_BAR
+            + self.pressure_integral * PRESSURE_CONTROL_KI_RPM_PER_BAR_S)
+            * self.pressure_adaptive_gain;
+        let max_step = (PRESSURE_CONTROL_BASE_MAX_STEP_RPM * self.pressure_adaptive_gain)
+            .max(PRESSURE_CONTROL_MIN_STEP_RPM);
+        let rpm_delta = rpm_delta.clamp(-max_step, max_step);
+        let next_rpm =
+            Self::quantize_rpm((self.target_rpm + rpm_delta).clamp(0.0, PRESSURE_CONTROL_MAX_RPM));
 
-        if (next_rpm - self.target_rpm).abs() < 0.1 {
+        if (next_rpm - self.target_rpm).abs() < 0.05 {
             return;
         }
 
@@ -422,31 +601,48 @@ impl MachineAct for NetworkShimMachine {
                         }
                     } else if let Some(rpm_val) = obj.get("SetInverterTargetRpm") {
                         if let Some(rpm) = rpm_val.as_f64() {
-                            self.target_rpm = rpm;
-                            self.pressure_integral = 0.0;
+                            self.target_rpm = Self::quantize_rpm(rpm);
+                            self.reset_pressure_control_tracking(Instant::now());
                             self.emit_state();
                         }
                     } else if let Some(pressure_val) = obj.get("SetInverterTargetPressure") {
                         if let Some(pressure) = pressure_val.as_f64() {
                             self.target_pressure = pressure;
-                            self.pressure_integral = 0.0;
+                            self.reset_pressure_control_tracking(Instant::now());
                             self.emit_state();
                         }
                     } else if let Some(regulation_val) = obj.get("SetInverterRegulation") {
                         if let Some(uses_rpm) = regulation_val.as_bool() {
                             self.uses_rpm = uses_rpm;
-                            self.pressure_integral = 0.0;
-                            self.last_pressure_control = Instant::now();
+                            self.reset_pressure_control_tracking(Instant::now());
                             self.emit_state();
                         }
                     } else if let Some(t) = obj.get("SetFrontHeatingTargetTemperature") {
-                        if let Some(v) = t.as_f64() { self.target_temps[0] = v; self.emit_state(); }
-                    } else if let Some(t) = obj.get("SetMiddleHeatingTemperature").or(obj.get("SetMiddleHeatingTargetTemperature")) {
-                        if let Some(v) = t.as_f64() { self.target_temps[1] = v; self.emit_state(); }
+                        if let Some(v) = t.as_f64() {
+                            self.target_temps[0] = v;
+                            self.emit_state();
+                        }
+                    } else if let Some(t) = obj
+                        .get("SetMiddleHeatingTemperature")
+                        .or(obj.get("SetMiddleHeatingTargetTemperature"))
+                    {
+                        if let Some(v) = t.as_f64() {
+                            self.target_temps[1] = v;
+                            self.emit_state();
+                        }
                     } else if let Some(t) = obj.get("SetBackHeatingTargetTemperature") {
-                        if let Some(v) = t.as_f64() { self.target_temps[2] = v; self.emit_state(); }
-                    } else if let Some(t) = obj.get("SetNozzleHeatingTemperature").or(obj.get("SetNozzleHeatingTargetTemperature")) {
-                        if let Some(v) = t.as_f64() { self.target_temps[3] = v; self.emit_state(); }
+                        if let Some(v) = t.as_f64() {
+                            self.target_temps[2] = v;
+                            self.emit_state();
+                        }
+                    } else if let Some(t) = obj
+                        .get("SetNozzleHeatingTemperature")
+                        .or(obj.get("SetNozzleHeatingTargetTemperature"))
+                    {
+                        if let Some(v) = t.as_f64() {
+                            self.target_temps[3] = v;
+                            self.emit_state();
+                        }
                     }
                 }
                 let _ = self.mutation_tx.try_send(value);

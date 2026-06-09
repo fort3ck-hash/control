@@ -332,7 +332,7 @@ export function MarkdownToc({
   return (
     <nav
       className={cn("toc w-full text-xs", className)}
-      aria-label="Table of contents"
+      aria-label="Inhaltsverzeichnis"
     >
       <div>{renderTocItems(tocItems)}</div>
     </nav>

@@ -17,7 +17,7 @@ export function WagoDoTestMachineControlPage() {
     <Page>
       <ControlGrid columns={2}>
         {/* Digital Output Controls */}
-        <ControlCard title="Digital Outputs (Do1-Do8)">
+        <ControlCard title="Digitalausgaenge (Do1-Do8)">
           <div className="grid grid-cols-2 gap-6">
             {safeState.led_on.map((output, index) => (
               <Label key={index} label={`Do${index + 1}`}>
@@ -27,13 +27,13 @@ export function WagoDoTestMachineControlPage() {
                   className="flex flex-col gap-3"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "flex-1",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "flex-1",
@@ -47,13 +47,13 @@ export function WagoDoTestMachineControlPage() {
         </ControlCard>
 
         {/* Master Output Control */}
-        <ControlCard title="Master Output Control">
+        <ControlCard title="Hauptausgang-Steuerung">
           <SelectionGroup<"On" | "Off">
             value={safeState.led_on.every(Boolean) ? "On" : "Off"}
             orientation="horizontal"
             options={{
-              Off: { children: "Turn All Off" },
-              On: { children: "Turn All On" },
+              Off: { children: "Alle ausschalten" },
+              On: { children: "Alle einschalten" },
             }}
             onChange={(value) => setAllLeds(value === "On")}
           />

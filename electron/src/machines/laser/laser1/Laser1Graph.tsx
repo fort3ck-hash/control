@@ -54,10 +54,10 @@ export function Laser1GraphsPage() {
     };
   }, [roundness]);
 
-  const diameterColor = "#3b82f6"; // blue
-  const xDiameterColor = "#ef4444"; // red
-  const yDiameterColor = "#22c55e"; // green
-  const roundnessColor = "#eab308"; // yellow
+  const diameterFarbe = "#3b82f6"; // blue
+  const xDiameterFarbe = "#ef4444"; // red
+  const yDiameterFarbe = "#22c55e"; // green
+  const roundnessFarbe = "#eab308"; // yellow
 
   // config for all graphs
   const baseGraphConfig: GraphConfig = {
@@ -74,7 +74,7 @@ export function Laser1GraphsPage() {
   const diameterGraphData = [
     {
       newData: diameter,
-      color: diameterColor,
+      color: diameterFarbe,
       title: "Diameter",
       lines: [
         // Tolerance for diameter
@@ -82,14 +82,14 @@ export function Laser1GraphsPage() {
           type: "threshold" as const,
           value: targetDiameterValue + higherTolerance,
           label: "Upper Tolerance",
-          color: diameterColor,
+          color: diameterFarbe,
           dash: [5, 5],
         },
         {
           type: "threshold" as const,
           value: targetDiameterValue - lowerTolerance,
           label: "Lower Tolerance",
-          color: diameterColor,
+          color: diameterFarbe,
           dash: [5, 5],
         },
         {
@@ -97,23 +97,23 @@ export function Laser1GraphsPage() {
           value: targetDiameterValue,
           targetSeries: targetDiameterSeries,
           label: "Target",
-          color: diameterColor,
+          color: diameterFarbe,
         },
       ],
     },
 
     ...(isTwoAxis && x_diameter
-      ? [{ newData: x_diameter, color: xDiameterColor, title: "X-Diameter" }]
+      ? [{ newData: x_diameter, color: xDiameterFarbe, title: "X-Diameter" }]
       : []),
     ...(isTwoAxis && y_diameter
-      ? [{ newData: y_diameter, color: yDiameterColor, title: "Y-Diameter" }]
+      ? [{ newData: y_diameter, color: yDiameterFarbe, title: "Y-Diameter" }]
       : []),
   ];
 
   // Roundness-Graph
   const roundnessGraphData = {
     newData: roundnessPercent,
-    color: roundnessColor,
+    color: roundnessFarbe,
     title: "Roundness (%)",
   };
 
@@ -133,7 +133,7 @@ export function Laser1GraphsPage() {
               exportFilename: "diameter_data",
               colors: {
                 ...baseGraphConfig.colors,
-                primary: diameterColor,
+                primary: diameterFarbe,
               },
             }}
             graphId="diameter-graph"
@@ -154,7 +154,7 @@ export function Laser1GraphsPage() {
                 exportFilename: "roundness_data",
                 colors: {
                   ...baseGraphConfig.colors,
-                  primary: roundnessColor,
+                  primary: roundnessFarbe,
                 },
               }}
               graphId="roundness-graph"

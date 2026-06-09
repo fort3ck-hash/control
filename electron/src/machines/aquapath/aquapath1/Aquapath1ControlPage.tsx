@@ -180,13 +180,13 @@ export function Aquapath1ControlPage() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
@@ -307,13 +307,13 @@ export function Aquapath1ControlPage() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
@@ -328,14 +328,14 @@ export function Aquapath1ControlPage() {
           </div>
         </ControlCard>
 
-        <ControlCard className="bg-red" title="Mode">
+        <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<"Standby" | "Auto">
             value={state?.mode_state.mode}
             orientation="vertical"
             className="grid h-full grid-cols-2 gap-2"
             options={{
               Standby: {
-                children: "Standby",
+                children: "Bereit",
                 icon: "lu:CirclePause",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
@@ -353,7 +353,7 @@ export function Aquapath1ControlPage() {
 
         <ControlCard className="bg-blue" title="Heating Power Consumption">
           <TimeSeriesValueNumeric
-            label="Total Power"
+            label="Gesamtleistung"
             unit="W"
             renderValue={(value) => roundToDecimals(value, 0)}
             timeseries={combinedPower}

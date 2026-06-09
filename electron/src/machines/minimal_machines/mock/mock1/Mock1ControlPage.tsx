@@ -18,7 +18,7 @@ function SineWaveCard({ title, timeseries }: SineWaveCardProps) {
   return (
     <ControlCard title={title}>
       <TimeSeriesValueNumeric
-        label="Current Value"
+        label="Istwert"
         timeseries={timeseries}
         renderValue={(value) => value.toFixed(3)}
       />
@@ -50,15 +50,15 @@ export function Mock1ControlPage() {
   return (
     <Page>
       <ControlGrid columns={2}>
-        <SineWaveCard title="Sine Wave Sum" timeseries={sineWaveSum} />
-        <SineWaveCard title="Sine Wave 1" timeseries={sineWave1} />
-        <SineWaveCard title="Sine Wave 2" timeseries={sineWave2} />
-        <SineWaveCard title="Sine Wave 3" timeseries={sineWave3} />
+        <SineWaveCard title="Sinuswellen-Summe" timeseries={sineWaveSum} />
+        <SineWaveCard title="Sinuswelle 1" timeseries={sineWave1} />
+        <SineWaveCard title="Sinuswelle 2" timeseries={sineWave2} />
+        <SineWaveCard title="Sinuswelle 3" timeseries={sineWave3} />
 
-        <ControlCard title="Frequency">
+        <ControlCard title="Frequenz">
           <div className="flex flex-row gap-2">
             <EditValue
-              title="Frequency 1"
+              title="Frequenz 1"
               unit="mHz"
               value={frequency1}
               defaultValue={defaultState?.frequency1}
@@ -69,7 +69,7 @@ export function Mock1ControlPage() {
               onChange={setFrequency1}
             />
             <EditValue
-              title="Frequency 2"
+              title="Frequenz 2"
               unit="mHz"
               value={frequency2}
               defaultValue={defaultState?.frequency2}
@@ -80,7 +80,7 @@ export function Mock1ControlPage() {
               onChange={setFrequency2}
             />
             <EditValue
-              title="Frequency 3"
+              title="Frequenz 3"
               unit="mHz"
               value={frequency3}
               defaultValue={defaultState?.frequency3}
@@ -93,16 +93,16 @@ export function Mock1ControlPage() {
           </div>
         </ControlCard>
 
-        <ControlCard title="Mode">
+        <ControlCard title="Modus">
           <div className="flex flex-col gap-2">
-            <div className="text-sm font-medium">Mode</div>
+            <div className="text-sm font-medium">Modus</div>
             <SelectionGroup
               value={mode}
               onChange={(newMode: Mode) => setMode(newMode)}
               disabled={isDisabled}
               options={{
-                Standby: { children: "Standby" },
-                Running: { children: "Running" },
+                Standby: { children: "Bereit" },
+                Running: { children: "Laeuft" },
               }}
             />
           </div>

@@ -523,7 +523,7 @@ export function BigGraph({
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
                   {normalizedSeries.map((series, index) => {
-                    const seriesColor =
+                    const seriesFarbe =
                       series.color ||
                       defaultColors[index % defaultColors.length];
 
@@ -555,8 +555,8 @@ export function BigGraph({
                             : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                         } ${isLastVisible ? "cursor-not-allowed" : ""}`}
                         style={{
-                          backgroundColor: visibleSeries[index]
-                            ? seriesColor
+                          backgroundFarbe: visibleSeries[index]
+                            ? seriesFarbe
                             : undefined,
                         }}
                         title={`${series.title || `Series ${index + 1}`}: ${formattedValue} ${renderUnitSymbol(unit) || ""}${
@@ -595,7 +595,7 @@ export function BigGraph({
         <div className="flex-1 overflow-hidden rounded-b-3xl pt-4">
           <div
             className={`relative h-full w-full overflow-hidden transition-opacity duration-100`}
-            style={{ backgroundColor: colors.background }}
+            style={{ backgroundFarbe: colors.background }}
           >
             <div ref={containerRef} className="h-full w-full overflow-hidden" />
             <TargetDashOverlay

@@ -95,7 +95,7 @@ export function Winder2_7031SettingPage() {
     <Page>
       <ControlGrid>
         <ControlCard title="Traverse">
-          <Label label="Traverse Size">
+          <Label label="Traversengroesse">
             <SelectionGroupBoolean
               value={xlMode}
               disabled={isDisabled}
@@ -111,10 +111,10 @@ export function Winder2_7031SettingPage() {
               onChange={handleXlModeChange}
             />
           </Label>
-          <Label label="Step Size">
+          <Label label="Schrittweite">
             <EditValue
               value={state?.traverse_state?.step_size}
-              title={"Step Size"}
+              title={"Schrittweite"}
               unit="mm"
               step={0.05}
               min={0.1}
@@ -124,10 +124,10 @@ export function Winder2_7031SettingPage() {
               onChange={(value) => setTraverseStepSize(value)}
             />
           </Label>
-          <Label label="Padding">
+          <Label label="Randabstand">
             <EditValue
               value={state?.traverse_state?.padding}
-              title={"Padding"}
+              title={"Randabstand"}
               unit="mm"
               step={0.01}
               min={0}
@@ -139,8 +139,8 @@ export function Winder2_7031SettingPage() {
           </Label>
         </ControlCard>
 
-        <ControlCard title="Spool">
-          <Label label="Speed Algorithm">
+        <ControlCard title="Spule">
+          <Label label="Geschwindigkeitsalgorithmus">
             <SelectionGroup
               value={state?.spool_speed_controller_state?.regulation_mode}
               disabled={isDisabled}
@@ -151,7 +151,7 @@ export function Winder2_7031SettingPage() {
                   icon: "lu:ArrowUpDown",
                 },
                 Adaptive: {
-                  children: "Adaptive",
+                  children: "Adaptiv",
                   icon: "lu:Brain",
                 },
               }}
@@ -161,17 +161,17 @@ export function Winder2_7031SettingPage() {
             />
           </Label>
 
-          <Label label="Rotation Direction">
+          <Label label="Drehrichtung">
             <SelectionGroupBoolean
               value={state?.spool_speed_controller_state?.forward}
               disabled={isDisabled}
               loading={isLoading}
               optionFalse={{
-                children: "Reverse",
+                children: "Rueckwaerts",
                 icon: "lu:RotateCcw",
               }}
               optionTrue={{
-                children: "Forward",
+                children: "Vorwaerts",
                 icon: "lu:RotateCw",
               }}
               onChange={(value) => setSpoolForward(value)}
@@ -181,10 +181,10 @@ export function Winder2_7031SettingPage() {
           {state?.spool_speed_controller_state?.regulation_mode ===
             "MinMax" && (
             <>
-              <Label label="Minimum Speed">
+              <Label label="Minimale Geschwindigkeit">
                 <EditValue
                   value={state?.spool_speed_controller_state?.minmax_min_speed}
-                  title={"Minimum Speed"}
+                  title={"Minimale Geschwindigkeit"}
                   unit="rpm"
                   step={10}
                   min={0}
@@ -196,10 +196,10 @@ export function Winder2_7031SettingPage() {
                   onChange={(value) => setSpoolMinMaxMinSpeed(value)}
                 />
               </Label>
-              <Label label="Maximum Speed">
+              <Label label="Maximale Geschwindigkeit">
                 <EditValue
                   value={state?.spool_speed_controller_state?.minmax_max_speed}
-                  title={"Maximum Speed"}
+                  title={"Maximale Geschwindigkeit"}
                   unit="rpm"
                   step={10}
                   min={0}
@@ -217,12 +217,12 @@ export function Winder2_7031SettingPage() {
           {state?.spool_speed_controller_state?.regulation_mode ===
             "Adaptive" && (
             <div className="flex flex-row flex-wrap gap-4">
-              <Label label="Tension Target">
+              <Label label="Zugkraft-Sollwert">
                 <EditValue
                   value={
                     state?.spool_speed_controller_state?.adaptive_tension_target
                   }
-                  title={"Tension Target"}
+                  title={"Zugkraft-Sollwert"}
                   unit={undefined}
                   step={0.01}
                   min={0}
@@ -235,13 +235,13 @@ export function Winder2_7031SettingPage() {
                   onChange={(value) => setSpoolAdaptiveTensionTarget(value)}
                 />
               </Label>
-              <Label label="Learning Rate">
+              <Label label="Lernrate">
                 <EditValue
                   value={
                     state?.spool_speed_controller_state
                       ?.adaptive_radius_learning_rate
                   }
-                  title={"Radius Learning Rate"}
+                  title={"Radius-Lernrate"}
                   unit={undefined}
                   step={0.001}
                   min={0}
@@ -256,13 +256,13 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Max Speed Multiplier">
+              <Label label="Max. Geschwindigkeitsfaktor">
                 <EditValue
                   value={
                     state?.spool_speed_controller_state
                       ?.adaptive_max_speed_multiplier
                   }
-                  title={"Max Speed Multiplier"}
+                  title={"Max. Geschwindigkeitsfaktor"}
                   unit={undefined}
                   step={0.1}
                   min={0.1}
@@ -277,13 +277,13 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Acceleration Factor">
+              <Label label="Beschleunigungsfaktor">
                 <EditValue
                   value={
                     state?.spool_speed_controller_state
                       ?.adaptive_acceleration_factor
                   }
-                  title={"Acceleration Factor"}
+                  title={"Beschleunigungsfaktor"}
                   unit={undefined}
                   step={0.01}
                   min={0.01}
@@ -298,13 +298,13 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Deaccel. Urgency">
+              <Label label="Brems-Dringlichkeit">
                 <EditValue
                   value={
                     state?.spool_speed_controller_state
                       ?.adaptive_deacceleration_urgency_multiplier
                   }
-                  title={"Deacceleration Urgency Multiplier"}
+                  title={"Brems-Dringlichkeitsfaktor"}
                   unit={undefined}
                   step={0.5}
                   min={1}
@@ -323,24 +323,24 @@ export function Winder2_7031SettingPage() {
           )}
         </ControlCard>
 
-        <ControlCard title="Puller">
-          <Label label="Rotation Direction">
+        <ControlCard title="Abzug">
+          <Label label="Drehrichtung">
             <SelectionGroupBoolean
               value={state?.puller_state?.forward}
               disabled={isDisabled}
               loading={isLoading}
               optionFalse={{
-                children: "Reverse",
+                children: "Rueckwaerts",
                 icon: "lu:RotateCcw",
               }}
               optionTrue={{
-                children: "Forward",
+                children: "Vorwaerts",
                 icon: "lu:RotateCw",
               }}
               onChange={(value) => setPullerForward(value)}
             />
           </Label>
-          <Label label="Gear Ratio">
+          <Label label="Uebersetzung">
             <SelectionGroup
               value={state?.puller_state?.gear_ratio}
               disabled={isDisabled}
@@ -367,20 +367,20 @@ export function Winder2_7031SettingPage() {
             />
           </Label>
 
-          <Label label="Adaptive Speed (Experimental)">
+          <Label label="Adaptive Geschwindigkeit (experimentell)">
             <SelectionGroupBoolean
               value={adaptivePullerSpeed}
               disabled={isDisabled}
               loading={isLoading}
               optionFalse={{
-                children: "Disabled",
+                children: "Deaktiviert",
                 icon: "lu:X",
                 disabled:
                   adaptivePullerSpeed &&
                   state?.puller_state?.regulation === "Diameter",
               }}
               optionTrue={{
-                children: "Enabled",
+                children: "Aktiviert",
                 icon: "lu:FlaskConical",
               }}
               onChange={(value) => {
@@ -404,11 +404,11 @@ export function Winder2_7031SettingPage() {
           </Label>
 
           {adaptivePullerSpeed && (
-            <ControlCard title="Adaptive Speed">
-              <Label label="Allowed Diameter Deviation">
+            <ControlCard title="Adaptive Geschwindigkeit">
+              <Label label="Zulaessige Durchmesserabweichung">
                 <EditValue
                   value={state?.puller_state?.allowed_diameter_deviation}
-                  title={"Allowed Diameter Deviation"}
+                  title={"Zulaessige Durchmesserabweichung"}
                   unit="mm"
                   step={0.01}
                   min={0}
@@ -422,7 +422,7 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Max Speed Deviation">
+              <Label label="Max. Geschwindigkeitsabweichung">
                 {state?.puller_state?.regulation === "Diameter" && (
                   <span className="text-muted-foreground text-sm">
                     Only changeable in fixed mode
@@ -432,7 +432,7 @@ export function Winder2_7031SettingPage() {
                   value={fractionToPercent(
                     state?.puller_state?.adaptive_speed_delta_max,
                   )}
-                  title={"Max Speed Deviation"}
+                  title={"Max. Geschwindigkeitsabweichung"}
                   unit="%"
                   step={0.5}
                   min={0}
@@ -447,10 +447,10 @@ export function Winder2_7031SettingPage() {
                   disabled={state?.puller_state?.regulation === "Diameter"}
                 />
               </Label>
-              <Label label="Distance Between Steps">
+              <Label label="Abstand zwischen Schritten">
                 <EditValue
                   value={state?.puller_state?.adaptive_adjustment_distance}
-                  title={"Distance Between Steps"}
+                  title={"Abstand zwischen Schritten"}
                   unit="m"
                   step={0.1}
                   min={0}
@@ -464,12 +464,12 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Change Per Step">
+              <Label label="Aenderung pro Schritt">
                 <EditValue
                   value={fractionToPercent(
                     state?.puller_state?.adaptive_change_per_step,
                   )}
-                  title={"Increase Per Step"}
+                  title={"Erhoehung pro Schritt"}
                   unit="%"
                   step={0.1}
                   min={0.1}
@@ -483,7 +483,7 @@ export function Winder2_7031SettingPage() {
                   }
                 />
               </Label>
-              <Label label="Reference Machine">
+              <Label label="Referenzmaschine">
                 <MachineSelector
                   machines={filteredMachines}
                   selectedMachine={selectedMachine}

@@ -44,7 +44,7 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "vendor_id",
-    header: "Vendor",
+    header: "Hersteller",
     cell: (row) => <EthercatVendorId value={row.row.original.vendor_id} />,
   },
   {
@@ -86,7 +86,7 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "qitech_role",
-    header: "Assigned Device Role",
+    header: "Assigned Geraeterolle",
     cell: (row) => {
       const device_machine_identification =
         row.row.original.device_identification.device_machine_identification;
@@ -138,11 +138,11 @@ export function EthercatPage() {
       <p>
         Ethernet Interface{" "}
         {ethercatInterfaceDiscovery?.data.Discovering ? (
-          <span>Discovering...</span>
+          <span>Suche laeuft...</span>
         ) : ethercatInterfaceDiscovery?.data.Done ? (
           <Value value={ethercatInterfaceDiscovery?.data.Done} />
         ) : (
-          <span>Not Discovering</span>
+          <span>Keine Suche aktiv</span>
         )}
       </p>
       <SectionTitle title="SubDevices">

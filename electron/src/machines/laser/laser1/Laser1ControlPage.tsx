@@ -138,7 +138,7 @@ export function Laser1ControlPage() {
             </div>
           </div>
         </ControlCard>
-        <ControlCard title="Settings">
+        <ControlCard title="Einstellungen">
           <Label label="Set Target Diameter">
             <EditValue
               title="Set Target Diameter"

@@ -64,12 +64,12 @@ pub mod logging;
 pub mod r#loop;
 pub mod metrics;
 pub mod modbus_tcp;
+pub mod network_shim_init;
 pub mod panic;
 pub mod performance_metrics;
 pub mod rest;
 pub mod socketio;
 pub mod utils;
-pub mod network_shim_init;
 
 mod machine_manager;
 pub use machine_manager::MachineManager;

@@ -66,7 +66,7 @@ export function ManageMarkersDialog({
                     <div className="flex items-center gap-2">
                       <span
                         className="h-3 w-3 shrink-0 rounded-full border border-gray-300"
-                        style={{ backgroundColor: marker.color || "#000000" }}
+                        style={{ backgroundFarbe: marker.color || "#000000" }}
                       />
                       <span className="truncate font-semibold text-gray-900">
                         {marker.name}
@@ -98,7 +98,7 @@ export function ManageMarkersDialog({
             className="h-21 flex-1"
             onClick={() => onOpenChange(false)}
           >
-            Close
+            Schliessen
           </TouchButton>
           <TouchButton
             variant="outline"

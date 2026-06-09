@@ -28,7 +28,7 @@ export function GraphControls({
   onShowFromChange,
 }: ControlProps) {
   const getSelectedTimeWindowLabel = () => {
-    // If Show from Time is set, display "Show All" for the time window
+    // If Ab Uhrzeit anzeigen is set, display "Show All" for the time window
     if (showFromTimestamp) {
       return "Show All";
     }
@@ -185,7 +185,7 @@ export function FloatingControlPanel({
   const [isExpanded, setIsExpanded] = useState(true);
 
   const getSelectedTimeWindowLabel = () => {
-    // If Show from Time is set, display "Show All" for the time window
+    // If Ab Uhrzeit anzeigen is set, display "Show All" for the time window
     if (showFromTimestamp) {
       return "Show All";
     }

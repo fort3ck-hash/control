@@ -21,7 +21,7 @@ export const columns: ColumnDef<
 >[] = [
   {
     accessorKey: "qitech_machine",
-    header: "Machine",
+    header: "Maschine",
     cell: (row) => {
       const machine_identification =
         row.row.original?.machine_identification_unique.machine_identification;
@@ -34,7 +34,7 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "qitech_vendor",
-    header: "Vendor",
+    header: "Hersteller",
     cell: (row) => {
       const machine_identification =
         row.row.original?.machine_identification_unique.machine_identification;
@@ -48,7 +48,7 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "qitech_serial",
-    header: "Serial",
+    header: "Seriennummer",
     cell: (row) => {
       const serial = row.row.original?.machine_identification_unique.serial;
       if (!serial) {
@@ -59,7 +59,7 @@ export const columns: ColumnDef<
   },
   {
     accessorKey: "error",
-    header: "Error",
+    header: "Fehler",
     cell: (row) => {
       const error = row.row.original.error;
       if (!error) {
@@ -89,7 +89,7 @@ export function MachinesPage() {
 
   return (
     <Page>
-      <SectionTitle title="Machines">
+      <SectionTitle title="Maschinen">
         <RefreshIndicator ts={machines?.ts} />
       </SectionTitle>
       <MyTable table={table} key={data.toString()} />

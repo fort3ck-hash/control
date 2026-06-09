@@ -34,7 +34,7 @@ export function Wago750460MachineControlPage() {
 
                 {hasError || temperature === null ? (
                   <div className="flex items-center gap-2">
-                    <StatusBadge variant="error">Wire Break</StatusBadge>
+                    <StatusBadge variant="error">Drahtbruch</StatusBadge>
                   </div>
                 ) : (
                   <div className="flex items-baseline gap-1">

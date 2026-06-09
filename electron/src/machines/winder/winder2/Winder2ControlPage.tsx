@@ -87,10 +87,10 @@ export function Winder2ControlPage() {
   return (
     <Page>
       <ControlGrid>
-        <ControlCard title="Spool">
+        <ControlCard title="Spule">
           <Spool rpm={spoolRpm.current?.value} />
           <TimeSeriesValueNumeric
-            label="Spool Speed"
+            label="Spulengeschwindigkeit"
             unit="rpm"
             timeseries={spoolRpm}
             renderValue={(value) => roundToDecimals(value, 0)}
@@ -114,11 +114,11 @@ export function Winder2ControlPage() {
             />
           )}
           <div className="flex flex-row flex-wrap gap-4">
-            <Label label="Outer Limit">
+            <Label label="Aeussere Grenze">
               <EditValue
                 value={state?.traverse_state?.limit_outer}
                 unit="mm"
-                title="Outer Limit"
+                title="Aeussere Grenze"
                 defaultValue={defaultState?.traverse_state?.limit_outer}
                 // Traverse limit validation: Outer limit must be at least 0.9mm greater than inner limit
                 // We use 1mm buffer to ensure the backend validation (which requires >0.9mm) will pass
@@ -140,11 +140,11 @@ export function Winder2ControlPage() {
                 Go to Outer Limit
               </TouchButton>
             </Label>
-            <Label label="Inner Limit">
+            <Label label="Innere Grenze">
               <EditValue
                 value={state?.traverse_state?.limit_inner}
                 unit="mm"
-                title="Inner Limit"
+                title="Innere Grenze"
                 min={0}
                 // Traverse limit validation: Inner limit must be at least 0.9mm smaller than outer limit
                 // We use 1mm buffer to ensure the backend validation (which requires outer > inner + 0.9mm) will pass
@@ -176,12 +176,12 @@ export function Winder2ControlPage() {
               value={state?.traverse_state.laserpointer}
               disabled={isLoading || isDisabled}
               loading={isLoading}
-              optionFalse={{ children: "Off", icon: "lu:LightbulbOff" }}
-              optionTrue={{ children: "On", icon: "lu:Lightbulb" }}
+              optionFalse={{ children: "Aus", icon: "lu:LightbulbOff" }}
+              optionTrue={{ children: "Ein", icon: "lu:Lightbulb" }}
               onChange={enableTraverseLaserpointer}
             />
           </Label>
-          <Label label="Home">
+          <Label label="Referenzfahrt">
             <TouchButton
               variant="outline"
               icon="lu:House"
@@ -197,10 +197,10 @@ export function Winder2ControlPage() {
           </Label>
         </ControlCard>
 
-        <ControlCard title="Tension Arm">
+        <ControlCard title="Taenzerarm">
           <TensionArm degrees={tensionArmAngle.current?.value} />
           <TimeSeriesValueNumeric
-            label="Tension Arm"
+            label="Taenzerarm"
             unit="deg"
             timeseries={tensionArmAngle}
             renderValue={(value) => roundDegreesToDecimals(value, 0)}
@@ -215,11 +215,11 @@ export function Winder2ControlPage() {
             Set Zero Point
           </TouchButton>
           {!state?.tension_arm_state?.zeroed && (
-            <StatusBadge variant="error">Not Zeroed</StatusBadge>
+            <StatusBadge variant="error">Nicht genullt</StatusBadge>
           )}
         </ControlCard>
 
-        <ControlCard className="bg-red" title="Mode">
+        <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<Mode>
             value={state?.mode_state.mode}
             disabled={isDisabled}
@@ -229,25 +229,25 @@ export function Winder2ControlPage() {
             className="grid h-full grid-cols-2 gap-2"
             options={{
               Standby: {
-                children: "Standby",
+                children: "Bereit",
                 icon: "lu:Power",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
               },
               Hold: {
-                children: "Hold",
+                children: "Halten",
                 icon: "lu:CirclePause",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
               },
               Pull: {
-                children: "Pull",
+                children: "Ziehen",
                 icon: "lu:ChevronsLeft",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",
               },
               Wind: {
-                children: "Wind",
+                children: "Wickeln",
                 icon: "lu:RefreshCcw",
                 isActiveClassName: "bg-green-600",
                 disabled: !state?.mode_state?.can_wind,
@@ -257,27 +257,27 @@ export function Winder2ControlPage() {
           />
         </ControlCard>
 
-        <ControlCard className="bg-red" title="Puller">
+        <ControlCard className="bg-red" title="Abzug">
           <TimeSeriesValueNumeric
-            label="Speed"
+            label="Geschwindigkeit"
             unit="m/min"
             timeseries={pullerSpeed}
             renderValue={(value) => roundToDecimals(value, 1)}
           />
-          <Label label="Speed Regulation">
+          <Label label="Geschwindigkeitsregelung">
             <SelectionGroup<string>
               value={state?.puller_state?.regulation}
               disabled={isDisabled}
               loading={isLoading}
               options={{
                 Speed: {
-                  children: "Fixed",
+                  children: "Fest",
                   icon: "lu:Crosshair",
                 },
                 ...(adaptivePullerEnabled
                   ? {
                       Diameter: {
-                        children: "Adaptive",
+                        children: "Adaptiv",
                         icon: "lu:Brain",
                         disabled:
                           !state?.puller_state?.adaptive_reference_machine,
@@ -302,10 +302,10 @@ export function Winder2ControlPage() {
 
           {state?.puller_state?.regulation === "Speed" && (
             <>
-              <Label label="Target Speed">
+              <Label label="Sollgeschwindigkeit">
                 <EditValue
                   value={state?.puller_state?.target_speed}
-                  title={"Target Speed"}
+                  title={"Sollgeschwindigkeit"}
                   unit="m/min"
                   step={0.1}
                   min={0}
@@ -319,7 +319,7 @@ export function Winder2ControlPage() {
           )}
 
           {state?.puller_state?.regulation === "Diameter" && (
-            <Label label="Base Speed">
+            <Label label="Basisgeschwindigkeit">
               <div className="flex flex-row items-center gap-2 py-4">
                 <span className="font-mono text-4xl font-bold">
                   {state?.puller_state?.target_speed != null
@@ -332,19 +332,19 @@ export function Winder2ControlPage() {
           )}
         </ControlCard>
 
-        <ControlCard className="bg-red" title="Spool Autostop">
+        <ControlCard className="bg-red" title="Spulen-Autostopp">
           <TimeSeriesValueNumeric
-            label="Pulled Distance"
+            label="Gezogene Laenge"
             renderValue={(value) => roundToDecimals(value, 2)}
             unit="m"
             timeseries={spoolProgress}
           />
 
-          <Label label="Target Length">
+          <Label label="Ziellaenge">
             <EditValue
               value={state?.spool_automatic_action_state.spool_required_meters}
               unit="m"
-              title="Expected Meters"
+              title="Erwartete Meter"
               defaultValue={250}
               min={10}
               max={10000}
@@ -363,7 +363,7 @@ export function Winder2ControlPage() {
             Reset Progress
           </TouchButton>
 
-          <Label label="After Target Length Reached">
+          <Label label="Nach Erreichen der Ziellaenge">
             <SelectionGroup<SpoolAutomaticActionMode>
               value={
                 state?.spool_automatic_action_state.spool_automatic_action_mode
@@ -374,18 +374,18 @@ export function Winder2ControlPage() {
               orientation="vertical"
               options={{
                 Hold: {
-                  children: "Hold",
+                  children: "Halten",
                   icon: "lu:CirclePause",
                   className: "h-full",
                 },
                 Pull: {
-                  children: "Pull",
+                  children: "Ziehen",
                   icon: "lu:ChevronsLeft",
                   className: "h-full",
                 },
 
                 NoAction: {
-                  children: "No Action",
+                  children: "Keine Aktion",
                   icon: "lu:RefreshCcw",
                   className: "h-full",
                 },
@@ -402,7 +402,7 @@ export function Winder2ControlPage() {
       >
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Reset Spool Progress?</DialogTitle>
+            <DialogTitle>Spulenfortschritt zuruecksetzen?</DialogTitle>
             <DialogDescription>
               The machine is currently in Wind mode. Are you sure you want to
               reset the spool progress?

@@ -21,17 +21,17 @@ const schemas = new Map([[1, mock1PresetDataSchema]]);
 
 const previewEntries: PresetPreviewEntries<Mock1> = [
   {
-    name: "Frequency 1",
+    name: "Frequenz 1",
     unit: "mHz",
     renderValue: (data: Mock1) => data?.frequency1?.toFixed(3),
   },
   {
-    name: "Frequency 2",
+    name: "Frequenz 2",
     unit: "mHz",
     renderValue: (data: Mock1) => data?.frequency2?.toFixed(3),
   },
   {
-    name: "Frequency 3",
+    name: "Frequenz 3",
     unit: "mHz",
     renderValue: (data: Mock1) => data?.frequency3?.toFixed(3),
   },

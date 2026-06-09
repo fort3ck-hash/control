@@ -105,7 +105,7 @@ export function TimeInput({
   }, [isOpen, getInitialValues, form]);
 
   const formatTimeDisplay = useCallback(() => {
-    if (!timestamp) return "Show from Time";
+    if (!timestamp) return "Ab Uhrzeit anzeigen";
     const time = timestampToTime(timestamp);
     return `${time.hours.toString().padStart(2, "0")}:${time.minutes.toString().padStart(2, "0")}:${time.seconds.toString().padStart(2, "0")}`;
   }, [timestamp, timestampToTime]);
@@ -273,7 +273,7 @@ export function TimeInput({
           <div className="flex min-h-[2.5rem] items-center justify-between">
             <div className="flex items-center gap-3">
               <Icon name="lu:Clock" className="size-6" />
-              <h3 className="text-xl font-semibold">Show from Time</h3>
+              <h3 className="text-xl font-semibold">Ab Uhrzeit anzeigen</h3>
             </div>
             {timestamp && (
               <TouchButton

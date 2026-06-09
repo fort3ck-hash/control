@@ -45,21 +45,21 @@ export type UpdateStore = UpdateState & UpdateActions;
 const defaultSteps: UpdateStep[] = [
   {
     id: "clone-repo",
-    label: "Clone repository",
+    label: "Repository klonen",
     status: "pending",
     subsector: "general",
     progress: 0,
   },
   {
     id: "rust-build",
-    label: "Build system packages",
+    label: "Systempakete bauen",
     status: "pending",
     subsector: "rust",
     progress: 0,
   },
   {
     id: "system-install",
-    label: "Install system update",
+    label: "Systemaktualisierung installieren",
     status: "pending",
     subsector: "nixos",
     progress: 0,

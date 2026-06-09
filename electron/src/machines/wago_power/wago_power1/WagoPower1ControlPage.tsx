@@ -37,7 +37,7 @@ export function WagoPower1ControlPage() {
             renderValue={(value) => value.toFixed(2)}
           />
         </ControlCard>
-        <ControlCard title="Mode">
+        <ControlCard title="Modus">
           <SelectionGroup<Mode>
             value={state?.mode}
             disabled={isDisabled}
@@ -47,13 +47,13 @@ export function WagoPower1ControlPage() {
             className="grid h-full grid-cols-2 gap-2"
             options={{
               Off: {
-                children: "Off",
+                children: "Aus",
                 icon: "lu:PowerOff",
                 isActiveClassName: "bg-gray-600",
                 className: "h-full",
               },
               On24V: {
-                children: "On",
+                children: "Ein",
                 icon: "lu:Power",
                 isActiveClassName: "bg-green-600",
                 className: "h-full",

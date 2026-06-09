@@ -32,7 +32,7 @@ export function BottlecapsTestMachineControlPage() {
   return (
     <Page>
       <ControlGrid columns={2}>
-        <ControlCard title="Digital Inputs">
+        <ControlCard title="Digitaleingaenge">
           <div className="grid grid-cols-2 gap-6">
             {safeState.inputs.map((input, index) => (
               <Label key={index} label={`Input ${index + 1}`}>
@@ -57,13 +57,13 @@ export function BottlecapsTestMachineControlPage() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
@@ -76,10 +76,10 @@ export function BottlecapsTestMachineControlPage() {
           </div>
         </ControlCard>
         <ControlCard title="Stepper Speed">
-          <Label label="Target Speed">
+          <Label label="Sollgeschwindigkeit">
             <EditValue
               value={safeState.stepper_target_speed}
-              title="Target Speed"
+              title="Sollgeschwindigkeit"
               defaultValue={0}
               min={-25000}
               max={25000}
@@ -145,7 +145,7 @@ export function BottlecapsTestMachineControlPage() {
             High (11)
           </TouchButton>
         </ControlCard>
-        <ControlCard height={2} title="Acceleration Factor">
+        <ControlCard height={2} title="Beschleunigungsfaktor">
           <TouchButton
             variant="outline"
             icon="lu:CirclePower"

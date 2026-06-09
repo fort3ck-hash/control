@@ -17,25 +17,25 @@ export function TestMotorControlPage() {
     <Page>
       <ControlGrid columns={2}>
         {/* Basic control */}
-        <ControlCard title="Motor Status">
+        <ControlCard title="Motorstatus">
           {/* On/Off switch */}
-          <Label label="Power State">
+          <Label label="Leistungsstatus">
             <SelectionGroupBoolean
               value={safeState.motor_enabled}
               // Icon mapping for True/False
-              optionTrue={{ children: "Enabled", icon: "lu:Play" }}
-              optionFalse={{ children: "Disabled", icon: "lu:CirclePause" }}
+              optionTrue={{ children: "Aktiviert", icon: "lu:Play" }}
+              optionFalse={{ children: "Deaktiviert", icon: "lu:CirclePause" }}
               onChange={(val) => setMotorOn(val)}
             />
           </Label>
         </ControlCard>
 
         {/* Velocity */}
-        <ControlCard title="Settings">
+        <ControlCard title="Einstellungen">
           {/* Velocity input with unit */}
-          <Label label="Target Velocity">
+          <Label label="Zielgeschwindigkeit">
             <EditValue
-              title="Velocity"
+              title="Geschwindigkeit"
               value={safeState.motor_velocity}
               unit="rpm"
               min={0}

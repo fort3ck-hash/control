@@ -8,7 +8,7 @@ export const DEFAULT_TIME_WINDOW_OPTIONS: TimeWindowOption[] = [
   { value: 10 * 60 * 1000, label: "10m" },
   { value: 30 * 60 * 1000, label: "30m" },
   { value: 1 * 60 * 60 * 1000, label: "1h" },
-  { value: "all" as const, label: "Show All" },
+  { value: "all" as const, label: "Alles anzeigen" },
 ];
 
 export const POINT_ANIMATION_DURATION = 1000;

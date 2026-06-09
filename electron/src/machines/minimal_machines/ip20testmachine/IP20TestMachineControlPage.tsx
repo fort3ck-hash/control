@@ -21,7 +21,7 @@ export function IP20TestMachineControlPage() {
     <Page>
       <ControlGrid columns={2}>
         {/* Digital Output Controls */}
-        <ControlCard title="Digital Outputs">
+        <ControlCard title="Digitalausgaenge">
           <div className="grid grid-cols-2 gap-6">
             {safeState.outputs.map((output, index) => (
               <Label key={index} label={`Output ${index + 1}`}>
@@ -31,13 +31,13 @@ export function IP20TestMachineControlPage() {
                   className="grid h-full grid-cols-2 gap-2"
                   options={{
                     Off: {
-                      children: "Off",
+                      children: "Aus",
                       icon: "lu:CirclePause",
                       isActiveClassName: "bg-red-600",
                       className: "h-full",
                     },
                     On: {
-                      children: "On",
+                      children: "Ein",
                       icon: "lu:CirclePlay",
                       isActiveClassName: "bg-green-600",
                       className: "h-full",
@@ -51,7 +51,7 @@ export function IP20TestMachineControlPage() {
         </ControlCard>
 
         {/* Digital Input Display */}
-        <ControlCard title="Digital Inputs">
+        <ControlCard title="Digitaleingaenge">
           <div className="grid grid-cols-2 gap-6">
             {safeLiveValues.inputs.map((input, index) => (
               <Label key={index} label={`Input ${index + 1}`}>
@@ -68,7 +68,7 @@ export function IP20TestMachineControlPage() {
         </ControlCard>
 
         {/* Master Output Control */}
-        <ControlCard title="Master Output Control">
+        <ControlCard title="Hauptausgang-Steuerung">
           <SelectionGroup<"On" | "Off">
             value={safeState.outputs.every(Boolean) ? "On" : "Off"}
             orientation="horizontal"
@@ -92,13 +92,13 @@ export function IP20TestMachineControlPage() {
         <ControlCard title="Input Summary">
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Active Inputs:</span>
+              <span className="text-sm font-medium">Aktive Eingaenge:</span>
               <Badge className="bg-blue-500">
                 {safeLiveValues.inputs.filter(Boolean).length} / 8
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Inactive Inputs:</span>
+              <span className="text-sm font-medium">Inaktive Eingaenge:</span>
               <Badge className="bg-gray-500">
                 {safeLiveValues.inputs.filter((i) => !i).length} / 8
               </Badge>

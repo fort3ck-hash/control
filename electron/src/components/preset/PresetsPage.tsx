@@ -32,7 +32,7 @@ export function PresetsPage<T>({
   });
 
   const handleOverwritePreset = (preset: Preset<T>) => {
-    const msg = `Are you sure you want to overwrite the preset "${preset.name}" with the current settings? This cannot be undone.`;
+    const msg = `Soll das Preset wirklich ueberschrieben werden "${preset.name}" mit den aktuellen Einstellungen? Das kann nicht rueckgaengig gemacht werden.`;
 
     if (!confirm(msg)) {
       return;
@@ -42,7 +42,7 @@ export function PresetsPage<T>({
   };
 
   const handleDeletePreset = (preset: Preset<T>) => {
-    const msg = `Are you sure you want to delete the preset "${preset.name}"? This cannot be undone.`;
+    const msg = `Soll das Preset wirklich geloescht werden "${preset.name}"? Das kann nicht rueckgaengig gemacht werden.`;
 
     if (!confirm(msg)) {
       return;

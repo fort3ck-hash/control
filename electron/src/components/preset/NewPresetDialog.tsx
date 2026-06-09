@@ -84,7 +84,7 @@ export function NewPresetDialog<T>({
             Create a New Preset
           </DialogTitle>
           <DialogDescription>
-            Save the configuration of this machine to use it later.
+            Speichert die Konfiguration dieser Maschine zur spaeteren Verwendung.
           </DialogDescription>
         </DialogHeader>
         <Separator />
@@ -102,7 +102,7 @@ export function NewPresetDialog<T>({
               ref={inputRef}
               readOnly
               value={name}
-              placeholder="Tap to enter preset name"
+              placeholder="Tippen, um Preset-Namen einzugeben"
               onFocus={showKeyboard}
               onClick={showKeyboard}
               className="h-14 text-lg"
@@ -133,7 +133,7 @@ export function NewPresetDialog<T>({
         />
 
         <div className="flex flex-col gap-6 text-sm">
-          <span>Current Settings:</span>
+          <span>Aktuelle Einstellungen:</span>
           <PresetPreviewTable entries={previewEntries} data={currentState} />
         </div>
 

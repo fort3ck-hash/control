@@ -54,7 +54,7 @@ const colorMap: Record<string, string> = {
   "47": "bg-gray-200",
 };
 
-const parseColorCodes = (text: string) => {
+const parseFarbeCodes = (text: string) => {
   /* eslint-disable-next-line no-control-regex */
   const parts = text.split(/(\x1b\[\d+m)/g);
   let currentClass = "";
@@ -71,7 +71,7 @@ const parseColorCodes = (text: string) => {
   return result;
 };
 
-const stripColorCodes = (text: string): string =>
+const stripFarbeCodes = (text: string): string =>
   // eslint-disable-next-line no-control-regex
   text.replace(/\x1b\[\d+m/g, "");
 
@@ -94,7 +94,7 @@ export function Terminal({
   }, [lines, autoScroll]);
 
   const handleCopy = async () => {
-    const plainText = lines.map(stripColorCodes).join("\n");
+    const plainText = lines.map(stripFarbeCodes).join("\n");
     try {
       await navigator.clipboard.writeText(plainText);
       setCopySuccess(true);
@@ -106,7 +106,7 @@ export function Terminal({
 
   const handleExport = () => {
     if (!exportPrefix) return;
-    const plainText = lines.map(stripColorCodes).join("\n");
+    const plainText = lines.map(stripFarbeCodes).join("\n");
     const timestamp = new Date()
       .toISOString()
       .replace(/[:.]/g, "-")
@@ -126,7 +126,7 @@ export function Terminal({
   };
 
   const rowRenderer: ListRowRenderer = ({ index, key, parent, style }) => {
-    const colorParts = parseColorCodes(lines[index] || "");
+    const colorParts = parseFarbeCodes(lines[index] || "");
 
     return (
       <CellMeasurer

@@ -279,7 +279,7 @@ export function PullerSpeedGraph({
       type: "target",
       value: targetSpeed,
       targetSeries,
-      label: "Target Speed",
+      label: "Sollgeschwindigkeit",
       color: "#06b6d4", // Match series color
     });
   }

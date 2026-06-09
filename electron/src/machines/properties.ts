@@ -37,7 +37,7 @@ export const winder2_spool_7031: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -115,7 +115,7 @@ export const winder2: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -193,7 +193,7 @@ export const extruder3: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -204,7 +204,7 @@ export const extruder3: MachineProperties = {
     },
     {
       role: 1,
-      role_label: "Inverter Interface",
+      role_label: "Umrichter-Schnittstelle",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -230,7 +230,7 @@ export const extruder3: MachineProperties = {
     },
     {
       role: 2,
-      role_label: "Heating Elements",
+      role_label: "Heizelemente",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -241,7 +241,7 @@ export const extruder3: MachineProperties = {
     },
     {
       role: 3,
-      role_label: "Pressure Sensor",
+      role_label: "Drucksensor",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -252,7 +252,7 @@ export const extruder3: MachineProperties = {
     },
     {
       role: 4,
-      role_label: "Thermometers",
+      role_label: "Thermometer",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -281,7 +281,7 @@ export const extruder2: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -292,7 +292,7 @@ export const extruder2: MachineProperties = {
     },
     {
       role: 1,
-      role_label: "Digital Input",
+      role_label: "Digitaleingang",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -303,7 +303,7 @@ export const extruder2: MachineProperties = {
     },
     {
       role: 2,
-      role_label: "Inverter Interface",
+      role_label: "Umrichter-Schnittstelle",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -329,7 +329,7 @@ export const extruder2: MachineProperties = {
     },
     {
       role: 3,
-      role_label: "Heating Elements",
+      role_label: "Heizelemente",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -340,7 +340,7 @@ export const extruder2: MachineProperties = {
     },
     {
       role: 4,
-      role_label: "Pressure Sensor",
+      role_label: "Drucksensor",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -351,7 +351,7 @@ export const extruder2: MachineProperties = {
     },
     {
       role: 5,
-      role_label: "Thermometers",
+      role_label: "Thermometer",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -404,7 +404,7 @@ export const buffer1: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -450,7 +450,7 @@ export const aquapath1: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -512,7 +512,7 @@ export const testmachine: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -535,7 +535,7 @@ export const testmachine: MachineProperties = {
   ],
 };
 export const digitalInputTestMachine: MachineProperties = {
-  name: "Digital Input Machine",
+  name: "Digitaleingangsmaschine",
   version: "V1",
   slug: "digitalInputTestMachine",
   icon: "lu:Disc3",
@@ -617,7 +617,7 @@ export const analogInputTestMachine: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 2,
@@ -676,7 +676,7 @@ export const testmachinestepper: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 0x00000021,
@@ -700,7 +700,7 @@ export const TestMotor: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 0x2,
@@ -711,7 +711,7 @@ export const TestMotor: MachineProperties = {
     },
     {
       role: 1,
-      role_label: "Stepper Motor",
+      role_label: "Schrittmotor",
       allowed_devices: [
         {
           vendor_id: 0x2,
@@ -806,7 +806,7 @@ export const wagoSerial: MachineProperties = {
   device_roles: [
     {
       role: 0,
-      role_label: "Bus Coupler",
+      role_label: "Buskoppler",
       allowed_devices: [
         {
           vendor_id: 0x00000021,
@@ -817,7 +817,7 @@ export const wagoSerial: MachineProperties = {
     },
     {
       role: 1,
-      role_label: "Serial Interface",
+      role_label: "Serielle Schnittstelle",
       allowed_devices: [
         {
           vendor_id: 0x00000021,
