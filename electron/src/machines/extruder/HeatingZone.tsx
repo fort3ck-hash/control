@@ -12,7 +12,7 @@ type Props = {
   title: string;
   heatingState?: HeatingState;
   heatingTimeSeries: TimeSeries;
-  heatingPower: TimeSeries;
+  heatingPower?: TimeSeries;
   min: number;
   max: number;
   onChangeTargetTemp?: (temperature: number) => void;
@@ -59,14 +59,16 @@ export function HeatingZone({
         )}
       </div>
 
-      <TimeSeriesValueNumeric
-        label="Heating Power"
-        unit="W"
-        renderValue={(value) =>
-          heatingState?.wiring_error ? "0.0" : roundToDecimals(value, 0)
-        }
-        timeseries={heatingPower}
-      />
+      {heatingPower && (
+        <TimeSeriesValueNumeric
+          label="Heating Power"
+          unit="W"
+          renderValue={(value) =>
+            heatingState?.wiring_error ? "0.0" : roundToDecimals(value, 0)
+          }
+          timeseries={heatingPower}
+        />
+      )}
 
       {heatingState?.wiring_error && targetTemperatureEnabled && (
         <StatusBadge variant="error">

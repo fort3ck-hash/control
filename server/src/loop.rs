@@ -304,8 +304,8 @@ pub fn loop_once<'maindevice>(inputs: &mut RtLoopInputs<'_>) -> Result<(), anyho
                     if let Some(sender) = inputs
                         .machine_manager
                         .machine_entries
-                        .first()
-                        .and_then(|entry| entry.machine.get_main_sender())
+                        .iter()
+                        .find_map(|entry| entry.machine.get_main_sender())
                     {
                         let _ = sender.try_send(machines::AsyncThreadMessage::MachinesInitialized);
                         tracing::info!(

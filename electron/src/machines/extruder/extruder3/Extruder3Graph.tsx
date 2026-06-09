@@ -13,18 +13,11 @@ export function Extruder3GraphsPage() {
   const {
     state,
     nozzleTemperature,
-    nozzlePower,
     frontTemperature,
-    frontPower,
     backTemperature,
-    backPower,
     middleTemperature,
-    middlePower,
     pressure,
     motorScrewRpm,
-    motorCurrent,
-    motorPower,
-    combinedPower,
     // Target value history for graph target lines
     targetPressure,
     targetScrewRpm,
@@ -143,88 +136,6 @@ export function Extruder3GraphsPage() {
     },
   };
 
-  // Combined Power Graph (no target lines for power)
-  const powerData = [
-    ...(nozzlePower
-      ? [
-          {
-            newData: nozzlePower,
-            title: "Nozzle",
-            color: "#ef4444",
-          },
-        ]
-      : []),
-    ...(frontPower
-      ? [
-          {
-            newData: frontPower,
-            title: "Front",
-            color: "#f59e0b",
-          },
-        ]
-      : []),
-    ...(middlePower
-      ? [
-          {
-            newData: middlePower,
-            title: "Middle",
-            color: "#8b5cf6",
-          },
-        ]
-      : []),
-    ...(backPower
-      ? [
-          {
-            newData: backPower,
-            title: "Back",
-            color: "#3b82f6",
-          },
-        ]
-      : []),
-    ...(motorPower
-      ? [
-          {
-            newData: motorPower,
-            title: "Motor",
-            color: "#10b981",
-          },
-        ]
-      : []),
-    ...(combinedPower
-      ? [
-          {
-            newData: combinedPower,
-            title: "Total",
-            color: "#000000",
-          },
-        ]
-      : []),
-  ];
-
-  const powerConfig: GraphConfig = {
-    ...baseConfig,
-    title: "Power Outputs",
-    exportFilename: "power_data",
-    colors: {
-      primary: "#10b981",
-      grid: "#e2e8f0",
-      axis: "#64748b",
-      background: "#ffffff",
-    },
-  };
-
-  const currentConfig: GraphConfig = {
-    ...baseConfig,
-    title: "Motor Current",
-    exportFilename: "motor_current_data",
-    colors: {
-      primary: "#3b82f6",
-      grid: "#e2e8f0",
-      axis: "#64748b",
-      background: "#ffffff",
-    },
-  };
-
   // Pressure Graph with connected target line
   const pressureConfig: GraphConfig = {
     ...baseConfig,
@@ -289,31 +200,6 @@ export function Extruder3GraphsPage() {
             renderValue={(value) => value.toFixed(1)}
             graphId="combined-temperatures"
             currentTimeSeries={nozzleTemperature ?? null}
-            machineId="extruder-graphs"
-          />
-
-          <GraphWithMarkerControls
-            syncHook={syncHook}
-            newData={powerData}
-            config={powerConfig}
-            unit="W"
-            renderValue={(value) => value.toFixed(1)}
-            graphId="combined-power"
-            currentTimeSeries={combinedPower ?? null}
-            machineId="extruder-graphs"
-          />
-
-          <GraphWithMarkerControls
-            syncHook={syncHook}
-            newData={{
-              newData: motorCurrent,
-              color: "#3b82f6",
-            }}
-            config={currentConfig}
-            unit="A"
-            renderValue={(value) => value.toFixed(2)}
-            graphId="motor-current"
-            currentTimeSeries={motorCurrent}
             machineId="extruder-graphs"
           />
 

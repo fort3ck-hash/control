@@ -19,20 +19,12 @@ export function Extruder3ControlPage() {
     state,
     defaultState,
     nozzleTemperature,
-    nozzlePower,
     frontTemperature,
-    frontPower,
     backTemperature,
-    backPower,
     middleTemperature,
-    middlePower,
     pressure,
 
     motorScrewRpm,
-    motorPower,
-    motorCurrent,
-    totalEnergyKWh,
-    combinedPower,
 
     setExtruderMode,
     setBackHeatingTemperature,
@@ -85,7 +77,6 @@ export function Extruder3ControlPage() {
           title={"Heating Front"}
           heatingState={state?.heating_states.front}
           heatingTimeSeries={frontTemperature}
-          heatingPower={frontPower}
           onChangeTargetTemp={setFrontHeatingTemperature}
           min={0}
           max={300}
@@ -95,7 +86,6 @@ export function Extruder3ControlPage() {
           title={"Heating Middle"}
           heatingState={state?.heating_states.middle}
           heatingTimeSeries={middleTemperature}
-          heatingPower={middlePower}
           onChangeTargetTemp={setMiddleHeatingTemperature}
           min={0}
           max={300}
@@ -105,7 +95,6 @@ export function Extruder3ControlPage() {
           title={"Heating Back"}
           heatingState={state?.heating_states.back}
           heatingTimeSeries={backTemperature}
-          heatingPower={backPower}
           onChangeTargetTemp={setBackHeatingTemperature}
           min={0}
           max={300}
@@ -115,7 +104,6 @@ export function Extruder3ControlPage() {
           title={"Heating Nozzle"}
           heatingState={state?.heating_states.nozzle}
           heatingTimeSeries={nozzleTemperature}
-          heatingPower={nozzlePower}
           onChangeTargetTemp={setNozzleHeatingTemperature}
           min={0}
           max={300}
@@ -237,32 +225,6 @@ export function Extruder3ControlPage() {
           />
         </ControlCard>
 
-        <ControlCard className="bg-blue" title="Power Consumption">
-          <TimeSeriesValueNumeric
-            label="Total Power"
-            unit="W"
-            renderValue={(value) => roundToDecimals(value, 0)}
-            timeseries={combinedPower}
-          />
-          <TimeSeriesValueNumeric
-            label="Motor Power"
-            unit="W"
-            renderValue={(value) => roundToDecimals(value, 0)}
-            timeseries={motorPower}
-          />
-          <TimeSeriesValueNumeric
-            label="Motor Current"
-            unit="A"
-            renderValue={(value) => roundToDecimals(value, 1)}
-            timeseries={motorCurrent}
-          />
-          <TimeSeriesValueNumeric
-            label="Total Energy Consumption"
-            unit="kWh"
-            renderValue={(value) => roundToDecimals(value, 3)}
-            timeseries={totalEnergyKWh}
-          />
-        </ControlCard>
       </ControlGrid>
     </Page>
   );
