@@ -13,6 +13,7 @@ import { roundToDecimals } from "@/lib/decimal";
 import { useExtruder2 } from "./useExtruder";
 import { TimeSeriesValueNumeric } from "@/control/TimeSeriesValue";
 import { StatusBadge } from "@/control/StatusBadge";
+import { MachineSelector } from "@/components/MachineConnectionDropdown";
 
 export function Extruder2ControlPage() {
   const {
@@ -42,6 +43,10 @@ export function Extruder2ControlPage() {
     setInverterRegulation,
     setInverterTargetPressure,
     setInverterTargetRpm,
+    setPressureControlStartTolerance,
+    setPressureControlLaserReference,
+    filteredLaserMachines,
+    selectedLaserMachine,
 
     isLoading,
     isDisabled,
@@ -180,6 +185,20 @@ export function Extruder2ControlPage() {
                 onChange={setInverterTargetPressure}
               />
             </Label>
+            <Label label="Druck-Toleranz">
+              <EditValue
+                value={state?.pressure_state.pressure_start_tolerance_bar}
+                defaultValue={
+                  defaultState?.pressure_state.pressure_start_tolerance_bar
+                }
+                unit="+/- bar"
+                title="Druck-Toleranz"
+                min={0.1}
+                max={100.0}
+                renderValue={(value) => roundToDecimals(value, 1)}
+                onChange={setPressureControlStartTolerance}
+              />
+            </Label>
           </div>
           <div className="flex flex-row flex-wrap gap-4">
             <TimeSeriesValueNumeric
@@ -191,7 +210,8 @@ export function Extruder2ControlPage() {
 
             {state?.pressure_state?.wiring_error && (
               <StatusBadge variant="error">
-                Druck kann nicht gemessen werden! Drucksensor-Verkabelung pruefen!
+                Druck kann nicht gemessen werden! Drucksensor-Verkabelung
+                pruefen!
               </StatusBadge>
             )}
             <TimeSeriesValueNumeric
@@ -201,7 +221,73 @@ export function Extruder2ControlPage() {
               timeseries={pressure}
             />
           </div>
+          <div className="flex flex-row flex-wrap gap-2">
+            <StatusBadge
+              variant={
+                state?.pressure_state.pressure_sample_stable
+                  ? "success"
+                  : "error"
+              }
+            >
+              Druckfenster{" "}
+              {state?.pressure_state.pressure_sample_stable
+                ? "stabil"
+                : `${roundToDecimals(
+                    state?.pressure_state.pressure_sample_elapsed_s ?? 0,
+                    0,
+                  )}/${roundToDecimals(
+                    state?.pressure_state.pressure_sample_window_s ?? 20,
+                    0,
+                  )} s`}
+            </StatusBadge>
+            <StatusBadge
+              variant={
+                state?.pressure_state.laser_in_tolerance ? "success" : "error"
+              }
+            >
+              Laser{" "}
+              {roundToDecimals(
+                state?.pressure_state.laser_tolerance_elapsed_s ?? 0,
+                0,
+              )}
+              /
+              {roundToDecimals(
+                state?.pressure_state.laser_tolerance_required_s ?? 30,
+                0,
+              )}{" "}
+              s
+            </StatusBadge>
+            <StatusBadge
+              variant={
+                state?.pressure_state.pressure_control_active
+                  ? "success"
+                  : state?.pressure_state.pressure_control_ready
+                    ? "success"
+                    : "error"
+              }
+            >
+              Druckregelung{" "}
+              {state?.pressure_state.pressure_control_active
+                ? "aktiv"
+                : state?.pressure_state.pressure_control_ready
+                  ? "bereit"
+                  : "wartet"}
+            </StatusBadge>
+          </div>
         </ControlCard>
+
+        <MachineSelector
+          title="Laser-Referenz"
+          machines={filteredLaserMachines}
+          selectedMachine={selectedLaserMachine}
+          connectedMachineState={{
+            machine_identification_unique:
+              state?.pressure_state.laser_reference_machine ?? null,
+            is_available: state?.pressure_state.laser_in_tolerance ?? false,
+          }}
+          setConnectedMachine={setPressureControlLaserReference}
+          clearConnectedMachine={() => setPressureControlLaserReference(null)}
+        />
 
         <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<"Standby" | "Heat" | "Extrude">

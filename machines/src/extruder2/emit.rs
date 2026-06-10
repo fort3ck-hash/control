@@ -47,13 +47,12 @@ impl ExtruderV3 {
             regulation_state: RegulationState {
                 uses_rpm: self.screw_speed_controller.get_uses_rpm(),
             },
-            pressure_state: PressureState {
-                target_bar: self
-                    .screw_speed_controller
+            pressure_state: PressureState::basic(
+                self.screw_speed_controller
                     .get_target_pressure()
                     .get::<bar>(),
-                wiring_error: self.screw_speed_controller.get_wiring_error(),
-            },
+                self.screw_speed_controller.get_wiring_error(),
+            ),
             screw_state: ScrewState {
                 target_rpm: self
                     .screw_speed_controller

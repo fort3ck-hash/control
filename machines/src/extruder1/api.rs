@@ -129,6 +129,43 @@ pub struct RegulationState {
 pub struct PressureState {
     pub target_bar: f64,
     pub wiring_error: bool,
+    pub laser_reference_machine: Option<crate::machine_identification::MachineIdentificationUnique>,
+    pub pressure_start_tolerance_bar: f64,
+    pub pressure_sample_window_s: f64,
+    pub pressure_sample_count: usize,
+    pub pressure_sample_elapsed_s: f64,
+    pub pressure_sample_mean_bar: f64,
+    pub pressure_sample_min_bar: f64,
+    pub pressure_sample_max_bar: f64,
+    pub pressure_sample_stable: bool,
+    pub laser_in_tolerance: bool,
+    pub laser_tolerance_required_s: f64,
+    pub laser_tolerance_elapsed_s: f64,
+    pub pressure_control_ready: bool,
+    pub pressure_control_active: bool,
+}
+
+impl PressureState {
+    pub fn basic(target_bar: f64, wiring_error: bool) -> Self {
+        Self {
+            target_bar,
+            wiring_error,
+            laser_reference_machine: None,
+            pressure_start_tolerance_bar: 10.0,
+            pressure_sample_window_s: 20.0,
+            pressure_sample_count: 0,
+            pressure_sample_elapsed_s: 0.0,
+            pressure_sample_mean_bar: 0.0,
+            pressure_sample_min_bar: 0.0,
+            pressure_sample_max_bar: 0.0,
+            pressure_sample_stable: false,
+            laser_in_tolerance: false,
+            laser_tolerance_required_s: 30.0,
+            laser_tolerance_elapsed_s: 0.0,
+            pressure_control_ready: false,
+            pressure_control_active: false,
+        }
+    }
 }
 
 #[derive(Serialize, Debug, Clone, PartialEq)]
@@ -257,6 +294,10 @@ pub enum Mutation {
     SetInverterTargetPressure(f64),
     SetInverterTargetRpm(f64),
     SetInverterRegulation(bool),
+    SetPressureControlStartTolerance(f64),
+    SetPressureControlLaserReference(
+        Option<crate::machine_identification::MachineIdentificationUnique>,
+    ),
 
     //Mode
     SetExtruderMode(ExtruderV2Mode),
@@ -335,6 +376,8 @@ impl MachineApi for ExtruderV2 {
             Mutation::SetInverterRegulation(uses_rpm) => self.set_regulation(uses_rpm),
             Mutation::SetInverterTargetPressure(bar) => self.set_target_pressure(bar),
             Mutation::SetInverterTargetRpm(rpm) => self.set_target_rpm(rpm),
+            Mutation::SetPressureControlStartTolerance(_) => {}
+            Mutation::SetPressureControlLaserReference(_) => {}
             Mutation::ResetInverter(_) => self.reset_inverter(),
 
             Mutation::SetFrontHeatingTargetTemperature(temp) => {

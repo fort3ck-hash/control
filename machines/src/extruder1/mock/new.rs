@@ -55,10 +55,7 @@ impl MachineNewTrait for ExtruderV2 {
                 mode: ExtruderV2Mode::Standby,
             },
             regulation_state: RegulationState { uses_rpm: true },
-            pressure_state: PressureState {
-                target_bar: 0.0,
-                wiring_error: false,
-            },
+            pressure_state: PressureState::basic(0.0, false),
             screw_state: ScrewState { target_rpm: 0.0 },
             heating_states: HeatingStates {
                 nozzle: HeatingState {

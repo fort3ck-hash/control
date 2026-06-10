@@ -1,8 +1,12 @@
 import { toastError } from "@/components/Toast";
 import { useMachineMutate as useMachineMutation } from "@/client/useClient";
+import { useMachines } from "@/client/useMachines";
 import { useStateOptimistic } from "@/lib/useStateOptimistic";
-import { MachineIdentificationUnique } from "@/machines/types";
-import { extruder2 } from "@/machines/properties";
+import {
+  MachineIdentificationUnique,
+  machineIdentificationUnique,
+} from "@/machines/types";
+import { extruder2, laser1 } from "@/machines/properties";
 import { extruder2Route } from "@/routes/routes";
 import { z } from "zod";
 import { StateEvent, Mode, useExtruder2Namespace } from "./extruder2Namespace";
@@ -150,6 +154,37 @@ export function useExtruder2() {
         requestInverterTargetPressure({
           machine_identification_unique: machineIdentification,
           data: { SetInverterTargetPressure: pressure },
+        }),
+    );
+  };
+
+  const setPressureControlStartTolerance = (tolerance: number) => {
+    updateStateOptimistically(
+      (current) => {
+        current.data.pressure_state.pressure_start_tolerance_bar = tolerance;
+      },
+      () =>
+        requestPressureControlStartTolerance({
+          machine_identification_unique: machineIdentification,
+          data: { SetPressureControlStartTolerance: tolerance },
+        }),
+    );
+  };
+
+  const setPressureControlLaserReference = (
+    laserMachine: MachineIdentificationUnique | null,
+  ) => {
+    updateStateOptimistically(
+      (current) => {
+        current.data.pressure_state.laser_reference_machine =
+          laserMachine ?? undefined;
+        current.data.pressure_state.laser_in_tolerance = false;
+        current.data.pressure_state.laser_tolerance_elapsed_s = 0.0;
+      },
+      () =>
+        requestPressureControlLaserReference({
+          machine_identification_unique: machineIdentification,
+          data: { SetPressureControlLaserReference: laserMachine },
         }),
     );
   };
@@ -393,6 +428,16 @@ export function useExtruder2() {
     z.object({ SetInverterTargetPressure: z.number() }),
   );
 
+  const { request: requestPressureControlStartTolerance } = useMachineMutation(
+    z.object({ SetPressureControlStartTolerance: z.number() }),
+  );
+
+  const { request: requestPressureControlLaserReference } = useMachineMutation(
+    z.object({
+      SetPressureControlLaserReference: machineIdentificationUnique.nullable(),
+    }),
+  );
+
   const { request: requestNozzleHeatingTemperature } = useMachineMutation(
     z.object({ SetNozzleHeatingTemperature: z.number() }),
   );
@@ -459,12 +504,40 @@ export function useExtruder2() {
     z.object({ StopPressurePidAutoTune: z.object({}) }),
   );
 
+  const machines = useMachines();
+  const filteredLaserMachines = useMemo(
+    () =>
+      machines.filter((machine) => {
+        const ident =
+          machine.machine_identification_unique.machine_identification;
+        return (
+          ident.vendor === laser1.machine_identification.vendor &&
+          ident.machine === laser1.machine_identification.machine
+        );
+      }),
+    [machines],
+  );
+
+  const selectedLaserMachine = useMemo(() => {
+    const serial =
+      stateOptimistic.value?.data.pressure_state.laser_reference_machine
+        ?.serial;
+    return (
+      filteredLaserMachines.find(
+        (machine) => machine.machine_identification_unique.serial === serial,
+      ) ?? null
+    );
+  }, [filteredLaserMachines, stateOptimistic.value]);
+
   return {
     // Consolidated state
     state: stateOptimistic.value?.data,
 
     // Default state for initial values
     defaultState: defaultState?.data,
+
+    filteredLaserMachines,
+    selectedLaserMachine,
 
     // Individual live values (TimeSeries)
     motorCurrent,
@@ -502,6 +575,8 @@ export function useExtruder2() {
     setInverterRegulation,
     setInverterTargetRpm,
     setInverterTargetPressure,
+    setPressureControlStartTolerance,
+    setPressureControlLaserReference,
     setNozzleHeatingTemperature,
     setFrontHeatingTemperature,
     setBackHeatingTemperature,

@@ -13,7 +13,7 @@ use crate::{
 pub async fn init_network_shim(app_state: Arc<SharedState>, base_url: String) {
     tracing::info!("NetworkShimMachine: initializing with URL {base_url}");
 
-    let machine = NetworkShimMachine::new(base_url);
+    let machine = NetworkShimMachine::new(base_url, Some(app_state.main_channel.clone()));
     let uid = machine.uid();
     let machine: Box<dyn machines::Machine> = Box::new(machine);
 

@@ -13,8 +13,8 @@ use smol::channel::{Receiver, Sender, bounded};
 use tracing::{info, warn};
 
 use crate::{
-    AsyncThreadMessage, MACHINE_EXTRUDER_V2, Machine, MachineAct, MachineApi, MachineMessage,
-    MachineValues, VENDOR_QITECH,
+    AsyncThreadMessage, MACHINE_EXTRUDER_V2, MACHINE_LASER_V1, Machine, MachineAct, MachineApi,
+    MachineData, MachineMessage, MachineSubscriptionRequest, MachineValues, VENDOR_QITECH,
     extruder1::{
         ExtruderV2Mode,
         api::{
@@ -30,10 +30,11 @@ use control_core::socketio::namespace::NamespaceCacheingLogic;
 
 pub const NETWORK_SHIM_SERIAL: u16 = 0xB001;
 const PRESSURE_CONTROL_INTERVAL_S: u64 = 3;
-const PRESSURE_CONTROL_STABILITY_DURATION_S: u64 = 120;
-const PRESSURE_CONTROL_STABILITY_BAND_BAR: f64 = 10.0;
 const PRESSURE_CONTROL_MIN_ACTIVE_PRESSURE_BAR: f64 = 5.0;
 const PRESSURE_CONTROL_DEADBAND_BAR: f64 = 1.0;
+const PRESSURE_CONTROL_DEFAULT_TOLERANCE_BAR: f64 = 10.0;
+const PRESSURE_CONTROL_DEFAULT_SAMPLE_WINDOW_S: f64 = 20.0;
+const PRESSURE_CONTROL_DEFAULT_LASER_TOLERANCE_S: f64 = 30.0;
 const PRESSURE_CONTROL_KP_RPM_PER_BAR: f64 = 0.006;
 const PRESSURE_CONTROL_KI_RPM_PER_BAR_S: f64 = 0.0004;
 const PRESSURE_CONTROL_INTEGRAL_LIMIT: f64 = 250.0;
@@ -122,6 +123,7 @@ pub struct NetworkShimMachine {
     uid: MachineIdentificationUnique,
     sender: Sender<MachineMessage>,
     receiver: Receiver<MachineMessage>,
+    main_sender: Option<Sender<AsyncThreadMessage>>,
     namespace: ExtruderV2Namespace,
     cache: Arc<Mutex<LiveCache>>,
     mutation_tx: Sender<Value>,
@@ -134,19 +136,31 @@ pub struct NetworkShimMachine {
     target_temps: [f64; 4],
     pressure_integral: f64,
     last_pressure_control: Instant,
-    pressure_control_armed: bool,
-    pressure_window_start: Option<Instant>,
-    pressure_window_min: f64,
-    pressure_window_max: f64,
+    pressure_control_active: bool,
+    pressure_start_tolerance_bar: f64,
+    pressure_sample_window_s: f64,
+    pressure_sample_window_start: Option<Instant>,
+    last_pressure_sample_at: Option<Instant>,
+    pressure_sample_values: Vec<f64>,
+    pressure_sample_elapsed_s: f64,
+    pressure_sample_mean_bar: f64,
+    pressure_sample_min_bar: f64,
+    pressure_sample_max_bar: f64,
+    pressure_sample_stable: bool,
+    laser_in_tolerance: bool,
+    laser_in_tolerance_since: Option<Instant>,
+    laser_tolerance_required_s: f64,
+    laser_tolerance_elapsed_s: f64,
     pressure_adaptive_gain: f64,
     last_pressure_error: Option<f64>,
     last_pressure_abs_error: Option<f64>,
+    laser_reference_machine: Option<MachineIdentificationUnique>,
     emitted_default_state: bool,
     last_emit: Instant,
 }
 
 impl NetworkShimMachine {
-    pub fn new(base_url: String) -> Self {
+    pub fn new(base_url: String, main_sender: Option<Sender<AsyncThreadMessage>>) -> Self {
         let (api_tx, api_rx) = bounded(64);
         let cache = Arc::new(Mutex::new(LiveCache::default()));
         let (mut_tx, mut_rx) = bounded::<Value>(64);
@@ -233,6 +247,7 @@ impl NetworkShimMachine {
             },
             sender: api_tx,
             receiver: api_rx,
+            main_sender,
             namespace: ExtruderV2Namespace { namespace: None },
             cache,
             mutation_tx: mut_tx,
@@ -243,13 +258,25 @@ impl NetworkShimMachine {
             target_temps: [160.0, 160.0, 160.0, 160.0],
             pressure_integral: 0.0,
             last_pressure_control: Instant::now(),
-            pressure_control_armed: false,
-            pressure_window_start: None,
-            pressure_window_min: 0.0,
-            pressure_window_max: 0.0,
+            pressure_control_active: false,
+            pressure_start_tolerance_bar: PRESSURE_CONTROL_DEFAULT_TOLERANCE_BAR,
+            pressure_sample_window_s: PRESSURE_CONTROL_DEFAULT_SAMPLE_WINDOW_S,
+            pressure_sample_window_start: None,
+            last_pressure_sample_at: None,
+            pressure_sample_values: Vec::new(),
+            pressure_sample_elapsed_s: 0.0,
+            pressure_sample_mean_bar: 0.0,
+            pressure_sample_min_bar: 0.0,
+            pressure_sample_max_bar: 0.0,
+            pressure_sample_stable: false,
+            laser_in_tolerance: false,
+            laser_in_tolerance_since: None,
+            laser_tolerance_required_s: PRESSURE_CONTROL_DEFAULT_LASER_TOLERANCE_S,
+            laser_tolerance_elapsed_s: 0.0,
             pressure_adaptive_gain: 1.0,
             last_pressure_error: None,
             last_pressure_abs_error: None,
+            laser_reference_machine: None,
             emitted_default_state: false,
             last_emit: Instant::now(),
         }
@@ -297,6 +324,20 @@ impl NetworkShimMachine {
             pressure_state: PressureState {
                 target_bar: self.target_pressure,
                 wiring_error: false,
+                laser_reference_machine: self.laser_reference_machine,
+                pressure_start_tolerance_bar: self.pressure_start_tolerance_bar,
+                pressure_sample_window_s: self.pressure_sample_window_s,
+                pressure_sample_count: self.pressure_sample_values.len(),
+                pressure_sample_elapsed_s: self.pressure_sample_elapsed_s,
+                pressure_sample_mean_bar: self.pressure_sample_mean_bar,
+                pressure_sample_min_bar: self.pressure_sample_min_bar,
+                pressure_sample_max_bar: self.pressure_sample_max_bar,
+                pressure_sample_stable: self.pressure_sample_stable,
+                laser_in_tolerance: self.laser_in_tolerance,
+                laser_tolerance_required_s: self.laser_tolerance_required_s,
+                laser_tolerance_elapsed_s: self.laser_tolerance_elapsed_s,
+                pressure_control_ready: self.pressure_control_can_start(),
+                pressure_control_active: self.pressure_control_active,
             },
             screw_state: ScrewState {
                 target_rpm: self.target_rpm,
@@ -398,58 +439,98 @@ impl NetworkShimMachine {
     fn reset_pressure_control_tracking(&mut self, now: Instant) {
         self.pressure_integral = 0.0;
         self.last_pressure_control = now;
-        self.pressure_control_armed = false;
-        self.pressure_window_start = None;
-        self.pressure_window_min = 0.0;
-        self.pressure_window_max = 0.0;
+        self.pressure_control_active = false;
+        self.reset_pressure_sampling(now);
         self.pressure_adaptive_gain = 1.0;
         self.last_pressure_error = None;
         self.last_pressure_abs_error = None;
     }
 
-    fn pressure_is_stable_enough_to_regulate(&mut self, now: Instant, pressure: f64) -> bool {
+    fn reset_pressure_sampling(&mut self, now: Instant) {
+        self.pressure_sample_window_start = Some(now);
+        self.last_pressure_sample_at = None;
+        self.pressure_sample_values.clear();
+        self.pressure_sample_elapsed_s = 0.0;
+        self.pressure_sample_mean_bar = 0.0;
+        self.pressure_sample_min_bar = 0.0;
+        self.pressure_sample_max_bar = 0.0;
+        self.pressure_sample_stable = false;
+    }
+
+    fn update_pressure_sample_window(&mut self, now: Instant, pressure: f64) {
         if pressure < PRESSURE_CONTROL_MIN_ACTIVE_PRESSURE_BAR {
-            self.reset_pressure_control_tracking(now);
-            return false;
+            self.reset_pressure_sampling(now);
+            return;
         }
 
-        let Some(window_start) = self.pressure_window_start else {
-            self.pressure_window_start = Some(now);
-            self.pressure_window_min = pressure;
-            self.pressure_window_max = pressure;
-            return false;
+        let window_start = match self.pressure_sample_window_start {
+            Some(window_start) => window_start,
+            None => {
+                self.pressure_sample_window_start = Some(now);
+                now
+            }
         };
 
-        self.pressure_window_min = self.pressure_window_min.min(pressure);
-        self.pressure_window_max = self.pressure_window_max.max(pressure);
-
-        if self.pressure_window_max - self.pressure_window_min > PRESSURE_CONTROL_STABILITY_BAND_BAR
+        if self
+            .last_pressure_sample_at
+            .is_none_or(|last| now.duration_since(last) >= Duration::from_secs(1))
         {
-            self.pressure_control_armed = false;
-            self.pressure_integral = 0.0;
-            self.pressure_window_start = Some(now);
-            self.pressure_window_min = pressure;
-            self.pressure_window_max = pressure;
-            self.last_pressure_error = None;
-            self.last_pressure_abs_error = None;
-            return false;
+            self.pressure_sample_values.push(pressure);
+            self.last_pressure_sample_at = Some(now);
         }
 
-        if now.duration_since(window_start)
-            < Duration::from_secs(PRESSURE_CONTROL_STABILITY_DURATION_S)
-        {
-            return false;
+        self.pressure_sample_elapsed_s = now.duration_since(window_start).as_secs_f64();
+        if self.pressure_sample_elapsed_s < self.pressure_sample_window_s {
+            return;
         }
 
-        if !self.pressure_control_armed {
-            self.pressure_control_armed = true;
-            self.pressure_integral = 0.0;
-            self.last_pressure_control = now;
-            self.last_pressure_error = None;
-            self.last_pressure_abs_error = None;
+        if self.pressure_sample_values.is_empty() {
+            self.reset_pressure_sampling(now);
+            return;
         }
 
-        true
+        let sum: f64 = self.pressure_sample_values.iter().sum();
+        self.pressure_sample_mean_bar = sum / self.pressure_sample_values.len() as f64;
+        self.pressure_sample_min_bar = self
+            .pressure_sample_values
+            .iter()
+            .copied()
+            .fold(f64::INFINITY, f64::min);
+        self.pressure_sample_max_bar = self
+            .pressure_sample_values
+            .iter()
+            .copied()
+            .fold(f64::NEG_INFINITY, f64::max);
+        self.pressure_sample_stable = self.pressure_sample_values.iter().all(|value| {
+            (value - self.pressure_sample_mean_bar).abs() <= self.pressure_start_tolerance_bar
+        });
+
+        let stable_mean = self.pressure_sample_mean_bar;
+        self.pressure_sample_values.clear();
+        self.pressure_sample_window_start = Some(now);
+        self.last_pressure_sample_at = None;
+        self.pressure_sample_elapsed_s = 0.0;
+
+        if self.pressure_sample_stable {
+            self.target_pressure = stable_mean;
+        }
+    }
+
+    fn update_laser_tolerance_timer(&mut self, now: Instant) {
+        if self.laser_in_tolerance {
+            let since = self.laser_in_tolerance_since.get_or_insert(now);
+            self.laser_tolerance_elapsed_s = now.duration_since(*since).as_secs_f64();
+        } else {
+            self.laser_in_tolerance_since = None;
+            self.laser_tolerance_elapsed_s = 0.0;
+        }
+    }
+
+    fn pressure_control_can_start(&self) -> bool {
+        self.pressure_sample_stable
+            && self.target_pressure > 0.0
+            && self.laser_in_tolerance
+            && self.laser_tolerance_elapsed_s >= self.laser_tolerance_required_s
     }
 
     fn adapt_pressure_control_gain(&mut self, error: f64) {
@@ -485,19 +566,30 @@ impl NetworkShimMachine {
     }
 
     fn update_pressure_regulation(&mut self, now: Instant) {
-        if self.uses_rpm
-            || self.mode != ExtruderV2Mode::Extrude
-            || self.target_pressure <= 0.0
-            || self.target_rpm <= 0.0
-        {
+        if self.uses_rpm || self.mode != ExtruderV2Mode::Extrude || self.target_rpm <= 0.0 {
             self.reset_pressure_control_tracking(now);
             return;
         }
 
         let pressure = self.cache.lock().unwrap().pressure;
-        if !self.pressure_is_stable_enough_to_regulate(now, pressure)
-            || now.duration_since(self.last_pressure_control)
-                < Duration::from_secs(PRESSURE_CONTROL_INTERVAL_S)
+        self.update_pressure_sample_window(now, pressure);
+        self.update_laser_tolerance_timer(now);
+
+        if !self.pressure_control_active {
+            if !self.pressure_control_can_start() {
+                return;
+            }
+            self.pressure_control_active = true;
+            self.pressure_integral = 0.0;
+            self.last_pressure_control = now;
+            self.last_pressure_error = None;
+            self.last_pressure_abs_error = None;
+            self.emit_state();
+            return;
+        }
+
+        if now.duration_since(self.last_pressure_control)
+            < Duration::from_secs(PRESSURE_CONTROL_INTERVAL_S)
         {
             return;
         }
@@ -540,6 +632,58 @@ impl NetworkShimMachine {
             .mutation_tx
             .try_send(serde_json::json!({"SetInverterTargetRpm": next_rpm}));
         self.emit_state();
+    }
+
+    fn set_pressure_start_tolerance(&mut self, tolerance_bar: f64) {
+        self.pressure_start_tolerance_bar = tolerance_bar.abs().clamp(0.1, 100.0);
+        self.reset_pressure_control_tracking(Instant::now());
+        self.emit_state();
+    }
+
+    fn set_laser_reference_machine(
+        &mut self,
+        machine_uid: Option<MachineIdentificationUnique>,
+    ) -> anyhow::Result<()> {
+        if let Some(uid) = machine_uid {
+            let ident = uid.machine_identification;
+            if ident.vendor != VENDOR_QITECH || ident.machine != MACHINE_LASER_V1 {
+                return Err(anyhow::anyhow!(
+                    "Pressure control reference must be a QiTech laser machine"
+                ));
+            }
+        }
+
+        if self.laser_reference_machine == machine_uid {
+            return Ok(());
+        }
+
+        if let (Some(main_sender), Some(previous_uid)) =
+            (&self.main_sender, self.laser_reference_machine)
+        {
+            main_sender.try_send(AsyncThreadMessage::UnsubscribeFromMachine(
+                MachineSubscriptionRequest {
+                    subscriber: self.uid,
+                    publisher: previous_uid,
+                },
+            ))?;
+        }
+
+        if let (Some(main_sender), Some(next_uid)) = (&self.main_sender, machine_uid) {
+            main_sender.try_send(AsyncThreadMessage::SubscribeToMachine(
+                MachineSubscriptionRequest {
+                    subscriber: self.uid,
+                    publisher: next_uid,
+                },
+            ))?;
+        }
+
+        self.laser_reference_machine = machine_uid;
+        self.laser_in_tolerance = false;
+        self.laser_in_tolerance_since = None;
+        self.laser_tolerance_elapsed_s = 0.0;
+        self.reset_pressure_control_tracking(Instant::now());
+        self.emit_state();
+        Ok(())
     }
 
     fn current_machine_values(&mut self) -> MachineValues {
@@ -617,6 +761,20 @@ impl MachineAct for NetworkShimMachine {
                             self.reset_pressure_control_tracking(Instant::now());
                             self.emit_state();
                         }
+                    } else if let Some(tolerance_val) = obj.get("SetPressureControlStartTolerance")
+                    {
+                        if let Some(tolerance) = tolerance_val.as_f64() {
+                            self.set_pressure_start_tolerance(tolerance);
+                        }
+                    } else if let Some(laser_val) = obj.get("SetPressureControlLaserReference") {
+                        let reference = serde_json::from_value::<Option<MachineIdentificationUnique>>(
+                            laser_val.clone(),
+                        );
+                        if let Ok(reference) = reference {
+                            if let Err(err) = self.set_laser_reference_machine(reference) {
+                                warn!("NetworkShimMachine: failed to set laser reference: {err}");
+                            }
+                        }
                     } else if let Some(t) = obj.get("SetFrontHeatingTargetTemperature") {
                         if let Some(v) = t.as_f64() {
                             self.target_temps[0] = v;
@@ -676,6 +834,32 @@ impl Machine for NetworkShimMachine {
     }
 
     fn get_main_sender(&self) -> Option<Sender<AsyncThreadMessage>> {
-        None
+        self.main_sender.clone()
+    }
+
+    fn receive_machines_data(&mut self, data: &MachineData) {
+        match data {
+            MachineData::Laser(state, _) => {
+                self.laser_in_tolerance = state.laser_state.in_tolerance;
+            }
+            MachineData::None => {}
+        }
+    }
+
+    fn subscribed_to_machine(&mut self, uid: MachineIdentificationUnique) {
+        self.laser_reference_machine = Some(uid);
+        self.reset_pressure_control_tracking(Instant::now());
+        self.emit_state();
+    }
+
+    fn unsubscribed_from_machine(&mut self, uid: MachineIdentificationUnique) {
+        if self.laser_reference_machine == Some(uid) {
+            self.laser_reference_machine = None;
+            self.laser_in_tolerance = false;
+            self.laser_in_tolerance_since = None;
+            self.laser_tolerance_elapsed_s = 0.0;
+            self.reset_pressure_control_tracking(Instant::now());
+            self.emit_state();
+        }
     }
 }

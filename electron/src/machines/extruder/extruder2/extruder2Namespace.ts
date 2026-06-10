@@ -10,7 +10,10 @@ import {
   ThrottledStoreUpdater,
   handleUnhandledEventError,
 } from "../../../client/socketioStore";
-import { MachineIdentificationUnique } from "@/machines/types";
+import {
+  MachineIdentificationUnique,
+  machineIdentificationUnique,
+} from "@/machines/types";
 import { createTimeSeries, TimeSeries } from "@/lib/timeseries";
 import { useMemo } from "react";
 import { pidAutoTuneStateSchema } from "../pidAutoTuneSchema";
@@ -75,6 +78,20 @@ export const regulationStateSchema = z.object({
 export const pressureStateSchema = z.object({
   target_bar: z.number(),
   wiring_error: z.boolean(),
+  laser_reference_machine: machineIdentificationUnique.nullable().optional(),
+  pressure_start_tolerance_bar: z.number().default(10.0),
+  pressure_sample_window_s: z.number().default(20.0),
+  pressure_sample_count: z.number().default(0),
+  pressure_sample_elapsed_s: z.number().default(0.0),
+  pressure_sample_mean_bar: z.number().default(0.0),
+  pressure_sample_min_bar: z.number().default(0.0),
+  pressure_sample_max_bar: z.number().default(0.0),
+  pressure_sample_stable: z.boolean().default(false),
+  laser_in_tolerance: z.boolean().default(false),
+  laser_tolerance_required_s: z.number().default(30.0),
+  laser_tolerance_elapsed_s: z.number().default(0.0),
+  pressure_control_ready: z.boolean().default(false),
+  pressure_control_active: z.boolean().default(false),
 });
 
 /**
