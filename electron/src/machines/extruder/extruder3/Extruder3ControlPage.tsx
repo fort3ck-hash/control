@@ -13,7 +13,6 @@ import { roundToDecimals } from "@/lib/decimal";
 import { useExtruder3 } from "./useExtruder";
 import { TimeSeriesValueNumeric } from "@/control/TimeSeriesValue";
 import { StatusBadge } from "@/control/StatusBadge";
-import { MachineSelector } from "@/components/MachineConnectionDropdown";
 
 export function Extruder3ControlPage() {
   const {
@@ -36,9 +35,6 @@ export function Extruder3ControlPage() {
     setInverterTargetPressure,
     setInverterTargetRpm,
     setPressureControlStartTolerance,
-    setPressureControlLaserReference,
-    filteredLaserMachines,
-    selectedLaserMachine,
 
     isLoading,
     isDisabled,
@@ -234,16 +230,9 @@ export function Extruder3ControlPage() {
               }
             >
               Laser{" "}
-              {roundToDecimals(
-                state?.pressure_state.laser_tolerance_elapsed_s ?? 0,
-                0,
-              )}
-              /
-              {roundToDecimals(
-                state?.pressure_state.laser_tolerance_required_s ?? 30,
-                0,
-              )}{" "}
-              s
+              {state?.pressure_state.laser_in_tolerance
+                ? "in Toleranz"
+                : "wartet"}
             </StatusBadge>
             <StatusBadge
               variant={
@@ -263,19 +252,6 @@ export function Extruder3ControlPage() {
             </StatusBadge>
           </div>
         </ControlCard>
-
-        <MachineSelector
-          title="Laser-Referenz"
-          machines={filteredLaserMachines}
-          selectedMachine={selectedLaserMachine}
-          connectedMachineState={{
-            machine_identification_unique:
-              state?.pressure_state.laser_reference_machine ?? null,
-            is_available: state?.pressure_state.laser_in_tolerance ?? false,
-          }}
-          setConnectedMachine={setPressureControlLaserReference}
-          clearConnectedMachine={() => setPressureControlLaserReference(null)}
-        />
 
         <ControlCard className="bg-red" title="Modus">
           <SelectionGroup<"Standby" | "Heat" | "Extrude">

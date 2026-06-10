@@ -529,6 +529,19 @@ export function useExtruder2() {
     );
   }, [filteredLaserMachines, stateOptimistic.value]);
 
+  useEffect(() => {
+    const currentReference =
+      stateOptimistic.value?.data.pressure_state.laser_reference_machine;
+    const firstLaser = filteredLaserMachines[0]?.machine_identification_unique;
+    if (!currentReference && firstLaser && !stateOptimistic.isOptimistic) {
+      setPressureControlLaserReference(firstLaser);
+    }
+  }, [
+    filteredLaserMachines,
+    stateOptimistic.value,
+    stateOptimistic.isOptimistic,
+  ]);
+
   return {
     // Consolidated state
     state: stateOptimistic.value?.data,

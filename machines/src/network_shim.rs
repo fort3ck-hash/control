@@ -34,7 +34,7 @@ const PRESSURE_CONTROL_MIN_ACTIVE_PRESSURE_BAR: f64 = 5.0;
 const PRESSURE_CONTROL_DEADBAND_BAR: f64 = 1.0;
 const PRESSURE_CONTROL_DEFAULT_TOLERANCE_BAR: f64 = 10.0;
 const PRESSURE_CONTROL_DEFAULT_SAMPLE_WINDOW_S: f64 = 20.0;
-const PRESSURE_CONTROL_DEFAULT_LASER_TOLERANCE_S: f64 = 30.0;
+const PRESSURE_CONTROL_DEFAULT_LASER_TOLERANCE_S: f64 = 0.0;
 const PRESSURE_CONTROL_KP_RPM_PER_BAR: f64 = 0.006;
 const PRESSURE_CONTROL_KI_RPM_PER_BAR_S: f64 = 0.0004;
 const PRESSURE_CONTROL_INTEGRAL_LIMIT: f64 = 250.0;
@@ -144,6 +144,7 @@ pub struct NetworkShimMachine {
     pressure_sample_values: Vec<f64>,
     pressure_sample_elapsed_s: f64,
     pressure_sample_mean_bar: f64,
+    pressure_previous_sample_mean_bar: Option<f64>,
     pressure_sample_min_bar: f64,
     pressure_sample_max_bar: f64,
     pressure_sample_stable: bool,
@@ -266,6 +267,7 @@ impl NetworkShimMachine {
             pressure_sample_values: Vec::new(),
             pressure_sample_elapsed_s: 0.0,
             pressure_sample_mean_bar: 0.0,
+            pressure_previous_sample_mean_bar: None,
             pressure_sample_min_bar: 0.0,
             pressure_sample_max_bar: 0.0,
             pressure_sample_stable: false,
@@ -452,6 +454,7 @@ impl NetworkShimMachine {
         self.pressure_sample_values.clear();
         self.pressure_sample_elapsed_s = 0.0;
         self.pressure_sample_mean_bar = 0.0;
+        self.pressure_previous_sample_mean_bar = None;
         self.pressure_sample_min_bar = 0.0;
         self.pressure_sample_max_bar = 0.0;
         self.pressure_sample_stable = false;
@@ -490,7 +493,8 @@ impl NetworkShimMachine {
         }
 
         let sum: f64 = self.pressure_sample_values.iter().sum();
-        self.pressure_sample_mean_bar = sum / self.pressure_sample_values.len() as f64;
+        let window_mean = sum / self.pressure_sample_values.len() as f64;
+        self.pressure_sample_mean_bar = window_mean;
         self.pressure_sample_min_bar = self
             .pressure_sample_values
             .iter()
@@ -501,19 +505,17 @@ impl NetworkShimMachine {
             .iter()
             .copied()
             .fold(f64::NEG_INFINITY, f64::max);
-        self.pressure_sample_stable = self.pressure_sample_values.iter().all(|value| {
-            (value - self.pressure_sample_mean_bar).abs() <= self.pressure_start_tolerance_bar
-        });
+        self.pressure_sample_stable =
+            self.pressure_previous_sample_mean_bar
+                .is_some_and(|previous_mean| {
+                    (window_mean - previous_mean).abs() <= self.pressure_start_tolerance_bar
+                });
 
-        let stable_mean = self.pressure_sample_mean_bar;
+        self.pressure_previous_sample_mean_bar = Some(window_mean);
         self.pressure_sample_values.clear();
         self.pressure_sample_window_start = Some(now);
         self.last_pressure_sample_at = None;
         self.pressure_sample_elapsed_s = 0.0;
-
-        if self.pressure_sample_stable {
-            self.target_pressure = stable_mean;
-        }
     }
 
     fn update_laser_tolerance_timer(&mut self, now: Instant) {

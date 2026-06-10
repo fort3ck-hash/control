@@ -88,7 +88,7 @@ export const pressureStateSchema = z.object({
   pressure_sample_max_bar: z.number().default(0.0),
   pressure_sample_stable: z.boolean().default(false),
   laser_in_tolerance: z.boolean().default(false),
-  laser_tolerance_required_s: z.number().default(30.0),
+  laser_tolerance_required_s: z.number().default(0.0),
   laser_tolerance_elapsed_s: z.number().default(0.0),
   pressure_control_ready: z.boolean().default(false),
   pressure_control_active: z.boolean().default(false),
